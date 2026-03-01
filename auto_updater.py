@@ -161,10 +161,11 @@ def install_update(installer_path, cleanup_callback=None):
             app_dir = os.path.dirname(os.path.abspath(__file__))
         app_exe = os.path.join(app_dir, "NVS_Pro.exe")
 
-        # Create a batch script that:
-        # 1. Waits for NVS_Pro.exe and pythonw.exe to fully exit
-        # 2. Runs the installer silently
-        # 3. Relaunches the app after install
+        # Define paths first
+        batch_path = os.path.join(tempfile.gettempdir(), "nvs_update_launcher.bat")
+        vbs_path = os.path.join(tempfile.gettempdir(), "nvs_update_launcher.vbs")
+
+        # Use a VBScript to run everything hidden (no CMD window visible)
         batch_content = f'''@echo off
 :: Wait for NVS_Pro.exe to fully exit (up to 30 seconds)
 set WAIT=0
@@ -185,39 +186,35 @@ timeout /t 2 /nobreak >nul
 :: Extra wait for DLLs to release
 timeout /t 3 /nobreak >nul
 
-:: Run the installer silently
-"{installer_path}" /VERYSILENT /CLOSEAPPLICATIONS /SP-
+:: Run the installer silently and WAIT for it to finish
+start /wait "" "{installer_path}" /VERYSILENT /CLOSEAPPLICATIONS /SP-
 
-:: Wait for installer to finish
-:wait_installer
-tasklist /FI "IMAGENAME eq NVS_Pro_v*" 2>nul | find /I "Setup" >nul
-if not errorlevel 1 (
-    timeout /t 2 /nobreak >nul
-    goto :wait_installer
-)
-timeout /t 2 /nobreak >nul
+:: Small delay after installer finishes
+timeout /t 3 /nobreak >nul
 
 :: Relaunch the app
 if exist "{app_exe}" start "" "{app_exe}"
 
-:: Clean up this batch file
+:: Clean up
+del "{vbs_path}" >nul 2>&1
 del "%~f0"
 '''
-        batch_path = os.path.join(tempfile.gettempdir(), "nvs_update_launcher.bat")
         with open(batch_path, "w") as f:
             f.write(batch_content)
+        vbs_content = f'CreateObject("Wscript.Shell").Run """{batch_path}""", 0, False'
+        with open(vbs_path, "w") as f:
+            f.write(vbs_content)
 
-        # Launch the batch script (hidden window)
+        # Launch the VBScript (completely invisible)
         subprocess.Popen(
-            ["cmd", "/c", batch_path],
-            creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW,
-            shell=False,
+            ["wscript.exe", vbs_path],
+            creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
         )
 
         # Force exit the app immediately
         os._exit(0)
     except Exception:
-        # Fallback: try direct launch without batch script
+        # Fallback: try direct launch without scripts
         try:
             time.sleep(0.5)
             subprocess.Popen(
