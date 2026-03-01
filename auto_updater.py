@@ -100,9 +100,7 @@ def download_update(download_url, progress_callback=None):
     """
     Download the installer .exe to a temp folder.
 
-    Args:
-        download_url: URL of the installer asset.
-        progress_callback: Optional callable(percent: int) for progress updates.
+    Uses a unique filename to avoid conflicts with previous download attempts.
 
     Returns:
         Path to the downloaded file, or None on failure.
@@ -112,14 +110,29 @@ def download_update(download_url, progress_callback=None):
             download_url,
             headers={"User-Agent": "NVS-Pro-Updater"},
         )
-        resp = urllib.request.urlopen(req, timeout=30)
+        resp = urllib.request.urlopen(req, timeout=60)
 
         total = int(resp.headers.get("Content-Length", 0))
+
+        # Use unique temp file to avoid conflicts with previous failed downloads
+        dest_dir = os.path.join(tempfile.gettempdir(), "nvs_updates")
+        os.makedirs(dest_dir, exist_ok=True)
+
+        # Clean up old downloads first
+        try:
+            for f in os.listdir(dest_dir):
+                try:
+                    os.remove(os.path.join(dest_dir, f))
+                except OSError:
+                    pass  # File may be locked
+        except Exception:
+            pass
+
         filename = download_url.rsplit("/", 1)[-1]
-        dest = os.path.join(tempfile.gettempdir(), filename)
+        dest = os.path.join(dest_dir, filename)
 
         downloaded = 0
-        chunk_size = 65536
+        chunk_size = 131072  # 128KB chunks for faster download
 
         with open(dest, "wb") as f:
             while True:
@@ -132,6 +145,11 @@ def download_update(download_url, progress_callback=None):
                     progress_callback(int(downloaded * 100 / total))
 
         resp.close()
+
+        # Verify the file was fully downloaded
+        if total > 0 and downloaded < total:
+            return None
+
         return dest
 
     except Exception:
@@ -142,9 +160,10 @@ def install_update(installer_path, cleanup_callback=None):
     """
     Launch the downloaded installer and exit the app.
 
-    Args:
-        installer_path: Path to the downloaded installer exe.
-        cleanup_callback: Optional callable to cleanup/close windows before exit.
+    Uses a PowerShell script (runs completely hidden via wscript) that:
+    1. Waits for the app to fully exit
+    2. Runs the installer silently
+    3. Relaunches the app after install completes
     """
     try:
         # Call cleanup callback if provided (e.g., close all windows)
@@ -154,61 +173,84 @@ def install_update(installer_path, cleanup_callback=None):
             except Exception:
                 pass
 
-        # Determine the app install directory for relaunch after update
+        # Determine the app exe path for relaunch after update
         if getattr(sys, 'frozen', False):
             app_dir = os.path.dirname(sys.executable)
         else:
             app_dir = os.path.dirname(os.path.abspath(__file__))
         app_exe = os.path.join(app_dir, "NVS_Pro.exe")
 
-        # Use a VBScript to handle the entire update process (completely hidden)
-        # VBScript waits for app to close, runs installer, then relaunches
-        vbs_path = os.path.join(tempfile.gettempdir(), "nvs_update_launcher.vbs")
-        vbs_content = f'''Set WshShell = CreateObject("WScript.Shell")
+        # Escape backslashes for embedding in VBScript strings
+        installer_esc = installer_path.replace("\\", "\\\\")
+        app_exe_esc = app_exe.replace("\\", "\\\\")
 
-' Wait for NVS_Pro.exe to fully exit (up to 30 seconds)
-Dim waited
-waited = 0
-Do While waited < 30
-    Dim oExec
-    Set oExec = WshShell.Exec("tasklist /FI ""IMAGENAME eq NVS_Pro.exe"" /NH")
-    Dim output
-    output = oExec.StdOut.ReadAll()
-    If InStr(LCase(output), "nvs_pro.exe") = 0 Then Exit Do
-    WScript.Sleep 2000
-    waited = waited + 2
-Loop
+        # Write a PowerShell script that handles the entire update process
+        # PowerShell runs hidden (no window) and is much more reliable than VBScript
+        ps_path = os.path.join(tempfile.gettempdir(), "nvs_update.ps1")
+        ps_content = f'''# NVS Pro Auto-Update Script
+$ErrorActionPreference = "SilentlyContinue"
 
-' Force kill if still running
-If waited >= 30 Then
-    WshShell.Run "taskkill /F /IM NVS_Pro.exe", 0, True
-    WshShell.Run "taskkill /F /IM pythonw.exe", 0, True
-    WScript.Sleep 2000
-End If
+# Log file for debugging
+$logFile = Join-Path $env:TEMP "nvs_update_log.txt"
+"[$(Get-Date)] Update script started" | Out-File $logFile
 
-' Extra wait for DLLs to release
-WScript.Sleep 3000
+# Wait for NVS_Pro.exe to fully exit (up to 30 seconds)
+$waited = 0
+while ($waited -lt 30) {{
+    $proc = Get-Process -Name "NVS_Pro" -ErrorAction SilentlyContinue
+    if (-not $proc) {{ break }}
+    Start-Sleep -Seconds 2
+    $waited += 2
+}}
+"[$(Get-Date)] Wait done ($waited sec)" | Out-File $logFile -Append
 
-' Run the installer silently and WAIT for it to finish
-WshShell.Run """" & "{installer_path}" & """" & " /VERYSILENT /CLOSEAPPLICATIONS /SP-", 0, True
+# Force kill if still running
+if ($waited -ge 30) {{
+    Stop-Process -Name "NVS_Pro" -Force -ErrorAction SilentlyContinue
+    Stop-Process -Name "pythonw" -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 2
+}}
 
-' Small delay after installer finishes
-WScript.Sleep 3000
+# Extra wait for file handles to release
+Start-Sleep -Seconds 2
 
-' Relaunch the app
-Dim fso
-Set fso = CreateObject("Scripting.FileSystemObject")
-If fso.FileExists("{app_exe}") Then
-    WshShell.Run """" & "{app_exe}" & """", 1, False
-End If
+# Run the installer silently and wait for it to finish
+$installerPath = "{installer_esc}"
+"[$(Get-Date)] Running installer: $installerPath" | Out-File $logFile -Append
 
-' Clean up this script
-fso.DeleteFile WScript.ScriptFullName, True
+$proc = Start-Process -FilePath $installerPath -ArgumentList "/VERYSILENT /CLOSEAPPLICATIONS /SP-" -Wait -PassThru -WindowStyle Hidden
+"[$(Get-Date)] Installer exit code: $($proc.ExitCode)" | Out-File $logFile -Append
+
+# Wait for installer to fully finish (file operations may continue briefly)
+Start-Sleep -Seconds 3
+
+# Relaunch the app
+$appExe = "{app_exe_esc}"
+if (Test-Path $appExe) {{
+    "[$(Get-Date)] Relaunching: $appExe" | Out-File $logFile -Append
+    Start-Process -FilePath $appExe
+}} else {{
+    "[$(Get-Date)] ERROR: App exe not found: $appExe" | Out-File $logFile -Append
+}}
+
+"[$(Get-Date)] Update script finished" | Out-File $logFile -Append
 '''
+        with open(ps_path, "w", encoding="utf-8") as f:
+            f.write(ps_content)
+
+        # Use a tiny VBScript to launch PowerShell completely hidden (no window at all)
+        # This is the only reliable way to run a script with zero visible windows on Windows
+        vbs_path = os.path.join(tempfile.gettempdir(), "nvs_update_launcher.vbs")
+        vbs_content = (
+            'Set shell = CreateObject("WScript.Shell")\n'
+            'shell.Run "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File """'
+            + ps_path.replace("\\", "\\\\")
+            + '"""", 0, False\n'
+        )
         with open(vbs_path, "w") as f:
             f.write(vbs_content)
 
-        # Launch the VBScript (completely invisible, detached)
+        # Launch the VBScript (completely invisible, fully detached from our process)
         subprocess.Popen(
             ["wscript.exe", vbs_path],
             creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
@@ -217,9 +259,8 @@ fso.DeleteFile WScript.ScriptFullName, True
         # Force exit the app immediately
         os._exit(0)
     except Exception:
-        # Fallback: try direct launch without scripts
+        # Fallback: just run the installer directly and exit
         try:
-            time.sleep(0.5)
             subprocess.Popen(
                 [installer_path, "/VERYSILENT", "/CLOSEAPPLICATIONS", "/SP-"],
                 creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,

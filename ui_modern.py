@@ -11098,37 +11098,50 @@ def main():
                 if msg.clickedButton() != download_btn:
                     return
 
-                # Show progress dialog (modal so user can't close it)
+                # --- Download in a background thread so UI stays responsive ---
+                class DownloadThread(QThread):
+                    progress = pyqtSignal(int)
+                    finished = pyqtSignal(str)  # installer_path or empty on failure
+                    error = pyqtSignal(str)
+
+                    def run(self):
+                        try:
+                            path = download_update(download_url, lambda p: self.progress.emit(p))
+                            if path and os.path.exists(path) and os.path.getsize(path) > 1_000_000:
+                                self.finished.emit(path)
+                            else:
+                                self.error.emit("Download incomplete or file too small")
+                        except Exception as e:
+                            self.error.emit(str(e))
+
+                # Show progress dialog (modal, no close button)
                 progress_dialog = QDialog(window)
                 progress_dialog.setWindowTitle("Downloading Update...")
-                progress_dialog.setFixedSize(400, 100)
-                progress_dialog.setWindowFlags(progress_dialog.windowFlags() & ~Qt.WindowContextHelpButtonHint & ~Qt.WindowCloseButtonHint)
+                progress_dialog.setFixedSize(420, 110)
+                progress_dialog.setWindowFlags(
+                    Qt.Dialog | Qt.CustomizeWindowHint | Qt.WindowTitleHint
+                )
                 progress_dialog.setModal(True)
-                layout = QVBoxLayout(progress_dialog)
+                p_layout = QVBoxLayout(progress_dialog)
                 progress_label = QLabel(f"Downloading v{latest_version}...")
                 progress_bar = QProgressBar()
                 progress_bar.setRange(0, 100)
-                layout.addWidget(progress_label)
-                layout.addWidget(progress_bar)
-                progress_dialog.show()
-                QApplication.processEvents()
+                p_layout.addWidget(progress_label)
+                p_layout.addWidget(progress_bar)
 
                 def on_progress(percent):
                     progress_bar.setValue(percent)
-                    QApplication.processEvents()
+                    if percent >= 100:
+                        progress_label.setText("Download complete, preparing install...")
 
-                installer_path = download_update(download_url, on_progress)
-                progress_dialog.close()
-
-                # Validate downloaded file (must be > 1MB to be a real installer)
-                if installer_path and os.path.exists(installer_path) and os.path.getsize(installer_path) > 1_000_000:
-                    # Show message that app will close
+                def on_download_done(installer_path):
+                    progress_dialog.close()
+                    # Confirm install
                     QMessageBox.information(window, "Installing Update",
                         "The application will now close to install the update.\n\n"
                         "It will restart automatically after installation.")
                     QApplication.processEvents()
 
-                    # Cleanup callback to close all windows
                     def cleanup():
                         try:
                             window.close()
@@ -11137,11 +11150,29 @@ def main():
                             pass
 
                     install_update(installer_path, cleanup_callback=cleanup)
-                else:
+
+                def on_download_error(err_msg):
+                    progress_dialog.close()
+                    print(f"[UPDATE] Download failed: {err_msg}")
                     QMessageBox.warning(window, "Update Failed",
-                                        "Failed to download the update. Please try again later.")
+                        "Failed to download the update. Please try again later.\n\n"
+                        f"Error: {err_msg}")
+
+                dl_thread = DownloadThread()
+                dl_thread.progress.connect(on_progress)
+                dl_thread.finished.connect(on_download_done)
+                dl_thread.error.connect(on_download_error)
+
+                # Keep reference so thread isn't garbage collected
+                window._update_download_thread = dl_thread
+
+                progress_dialog.show()
+                dl_thread.start()
+
             except Exception as e:
                 print(f"[UPDATE] Error: {e}")
+                import traceback
+                traceback.print_exc()
 
         QTimer.singleShot(3000, _check_update)
 
