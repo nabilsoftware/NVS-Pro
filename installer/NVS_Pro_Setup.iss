@@ -10,7 +10,7 @@
 ; ============================================================================
 
 #define MyAppName "Nabil Video Studio Pro"
-#define MyAppVersion "1.6.6"
+#define MyAppVersion "1.6.7"
 #define MyAppPublisher "Nabil Software"
 #define MyAppURL "https://nabilsoftware.com"
 #define MyAppExeName "NVS_Pro.exe"

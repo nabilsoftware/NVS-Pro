@@ -161,51 +161,54 @@ def install_update(installer_path, cleanup_callback=None):
             app_dir = os.path.dirname(os.path.abspath(__file__))
         app_exe = os.path.join(app_dir, "NVS_Pro.exe")
 
-        # Define paths first
-        batch_path = os.path.join(tempfile.gettempdir(), "nvs_update_launcher.bat")
+        # Use a VBScript to handle the entire update process (completely hidden)
+        # VBScript waits for app to close, runs installer, then relaunches
         vbs_path = os.path.join(tempfile.gettempdir(), "nvs_update_launcher.vbs")
+        vbs_content = f'''Set WshShell = CreateObject("WScript.Shell")
 
-        # Use a VBScript to run everything hidden (no CMD window visible)
-        batch_content = f'''@echo off
-:: Wait for NVS_Pro.exe to fully exit (up to 30 seconds)
-set WAIT=0
-:waitloop
-tasklist /FI "IMAGENAME eq NVS_Pro.exe" 2>nul | find /I "NVS_Pro.exe" >nul
-if errorlevel 1 goto :done_waiting
-timeout /t 2 /nobreak >nul
-set /a WAIT+=2
-if %WAIT% GEQ 30 goto :force_kill
-goto :waitloop
+' Wait for NVS_Pro.exe to fully exit (up to 30 seconds)
+Dim waited
+waited = 0
+Do While waited < 30
+    Dim oExec
+    Set oExec = WshShell.Exec("tasklist /FI ""IMAGENAME eq NVS_Pro.exe"" /NH")
+    Dim output
+    output = oExec.StdOut.ReadAll()
+    If InStr(LCase(output), "nvs_pro.exe") = 0 Then Exit Do
+    WScript.Sleep 2000
+    waited = waited + 2
+Loop
 
-:force_kill
-taskkill /F /IM NVS_Pro.exe >nul 2>&1
-taskkill /F /IM pythonw.exe >nul 2>&1
-timeout /t 2 /nobreak >nul
+' Force kill if still running
+If waited >= 30 Then
+    WshShell.Run "taskkill /F /IM NVS_Pro.exe", 0, True
+    WshShell.Run "taskkill /F /IM pythonw.exe", 0, True
+    WScript.Sleep 2000
+End If
 
-:done_waiting
-:: Extra wait for DLLs to release
-timeout /t 3 /nobreak >nul
+' Extra wait for DLLs to release
+WScript.Sleep 3000
 
-:: Run the installer silently and WAIT for it to finish
-start /wait "" "{installer_path}" /VERYSILENT /CLOSEAPPLICATIONS /SP-
+' Run the installer silently and WAIT for it to finish
+WshShell.Run """" & "{installer_path}" & """" & " /VERYSILENT /CLOSEAPPLICATIONS /SP-", 0, True
 
-:: Small delay after installer finishes
-timeout /t 3 /nobreak >nul
+' Small delay after installer finishes
+WScript.Sleep 3000
 
-:: Relaunch the app
-if exist "{app_exe}" start "" "{app_exe}"
+' Relaunch the app
+Dim fso
+Set fso = CreateObject("Scripting.FileSystemObject")
+If fso.FileExists("{app_exe}") Then
+    WshShell.Run """" & "{app_exe}" & """", 1, False
+End If
 
-:: Clean up
-del "{vbs_path}" >nul 2>&1
-del "%~f0"
+' Clean up this script
+fso.DeleteFile WScript.ScriptFullName, True
 '''
-        with open(batch_path, "w") as f:
-            f.write(batch_content)
-        vbs_content = f'CreateObject("Wscript.Shell").Run """{batch_path}""", 0, False'
         with open(vbs_path, "w") as f:
             f.write(vbs_content)
 
-        # Launch the VBScript (completely invisible)
+        # Launch the VBScript (completely invisible, detached)
         subprocess.Popen(
             ["wscript.exe", vbs_path],
             creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
