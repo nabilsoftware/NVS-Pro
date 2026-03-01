@@ -1,0 +1,154 @@
+================================================================================
+NVS PRO - HOW TO BUILD THE INSTALLER
+================================================================================
+Last Updated: February 5, 2026
+Version: 1.5.2
+
+READ THIS BEFORE EVERY BUILD! DO NOT SKIP ANY STEPS!
+
+================================================================================
+⚠️ CRITICAL RULES - DO NOT BREAK THESE:
+================================================================================
+
+❌ DO NOT use PyInstaller (pyinstaller command) - NEVER!
+❌ DO NOT use system Python 3.13 for PyArmor - use embedded Python 3.11.9
+❌ DO NOT obfuscate only changed files - ALWAYS obfuscate ALL 42 files!
+❌ DO NOT forget to update version in BOTH version.py AND NVS_Pro_Setup.iss
+
+================================================================================
+STEP 1: UPDATE VERSION (if releasing new version)
+================================================================================
+
+Update version in TWO places:
+
+1. version.py → VERSION = "x.x.x"
+2. installer\NVS_Pro_Setup.iss → #define MyAppVersion "x.x.x"
+
+================================================================================
+STEP 2: OBFUSCATE ALL PYTHON FILES WITH PYARMOR
+================================================================================
+
+CRITICAL: Use the EMBEDDED Python 3.11.9, NOT system Python!
+CRITICAL: Obfuscate ALL .py files, not just the ones you changed!
+
+Run this SINGLE command (copy-paste entire thing):
+
+cd "D:\DEV-SCRIPT\ALL-SCRIPT\3-NVS-PRO" && "D:\DEV-SCRIPT\ALL-SCRIPT\3-NVS-PRO\python\Scripts\pyarmor.exe" gen -O pyarmor_dist 1_diarize_cut_video.py 1_smart_interview_processor.py 10_youtube_upload.py 11_thumbnail_generator.py 2_style_interview_clips.py 3_transcribe_clips.py 4_ai_rewrite_script.py 4_smart_broll_processor.py 5_generate_voiceover.py 5_generate_voiceover_api.py 7_assemble_final_video.py 8_rank_video_sequence.py 9_combine_ranked_videos.py app_utils.py auto_updater.py content_creator.py content_creator_parallel.py crop_tool.py firebase_license.py first_run_setup.py license_manager.py logo_editor_tool.py logo_overlay_helper.py recreat-videos.py remote_control.py story_video_creator.py ui_api_manager.py ui_config_manager.py ui_license_dialog.py ui_modern.py ui_profile_wizard.py ui_settings_editor.py ui_styles.py ui_subscription_dialog.py ui_system_check.py ui_validators.py ui_voice_manager.py ui_widgets.py ui_youtube_downloader.py version.py video_editor_tool.py video_queue_manager.py
+
+This obfuscates ALL 42 Python files. Output goes to pyarmor_dist folder.
+
+================================================================================
+STEP 3: BUILD INSTALLER WITH INNO SETUP
+================================================================================
+
+Run this command:
+
+"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "D:\DEV-SCRIPT\ALL-SCRIPT\3-NVS-PRO\installer\NVS_Pro_Setup.iss"
+
+Output will be at:
+D:\DEV-SCRIPT\ALL-SCRIPT\3-NVS-PRO\installer_output\NVS_Pro_v{VERSION}_Setup.exe
+
+================================================================================
+LIST OF ALL 42 PYTHON FILES TO OBFUSCATE:
+================================================================================
+
+1_diarize_cut_video.py
+1_smart_interview_processor.py
+10_youtube_upload.py
+11_thumbnail_generator.py
+2_style_interview_clips.py
+3_transcribe_clips.py
+4_ai_rewrite_script.py
+4_smart_broll_processor.py
+5_generate_voiceover.py
+5_generate_voiceover_api.py
+7_assemble_final_video.py
+8_rank_video_sequence.py
+9_combine_ranked_videos.py
+app_utils.py
+auto_updater.py
+content_creator.py
+content_creator_parallel.py
+crop_tool.py
+firebase_license.py
+first_run_setup.py
+license_manager.py
+logo_editor_tool.py
+logo_overlay_helper.py
+recreat-videos.py
+remote_control.py
+story_video_creator.py
+ui_api_manager.py
+ui_config_manager.py
+ui_license_dialog.py
+ui_modern.py
+ui_profile_wizard.py
+ui_settings_editor.py
+ui_styles.py
+ui_subscription_dialog.py
+ui_system_check.py
+ui_validators.py
+ui_voice_manager.py
+ui_widgets.py
+ui_youtube_downloader.py
+version.py
+video_editor_tool.py
+video_queue_manager.py
+
+================================================================================
+WHAT EACH TOOL DOES:
+================================================================================
+
+PyArmor (python\Scripts\pyarmor.exe):
+  - Obfuscates Python source code for protection
+  - MUST use embedded Python 3.11.9
+  - Output goes to pyarmor_dist folder
+
+Inno Setup (ISCC.exe):
+  - Creates Windows installer (.exe)
+  - Reads obfuscated files from pyarmor_dist
+  - Packages everything into single installer
+
+================================================================================
+FILE LOCATIONS:
+================================================================================
+
+Source Python files:     D:\DEV-SCRIPT\ALL-SCRIPT\3-NVS-PRO\*.py
+Obfuscated files:        D:\DEV-SCRIPT\ALL-SCRIPT\3-NVS-PRO\pyarmor_dist\
+Installer script:        D:\DEV-SCRIPT\ALL-SCRIPT\3-NVS-PRO\installer\NVS_Pro_Setup.iss
+Output installer:        D:\DEV-SCRIPT\ALL-SCRIPT\3-NVS-PRO\installer_output\
+Embedded Python:         D:\DEV-SCRIPT\ALL-SCRIPT\3-NVS-PRO\python\ (Python 3.11.9)
+
+================================================================================
+WHY OBFUSCATE ALL FILES EVERY TIME?
+================================================================================
+
+The pyarmor_dist folder contains previously obfuscated files. If you only
+obfuscate the files you changed, the OLD versions of other files stay there.
+The installer then packages a MIX of old and new files = BROKEN APP!
+
+ALWAYS obfuscate ALL 42 files to ensure everything is in sync.
+
+================================================================================
+COMMON ISSUES AND FIXES
+================================================================================
+
+ISSUE: App has mix of old and new styles/features
+CAUSE: Only obfuscated changed files, old files stayed in pyarmor_dist
+FIX: Obfuscate ALL 42 files
+
+ISSUE: PyArmor runtime error (DLL load failed)
+CAUSE: Obfuscated with wrong Python version (system Python 3.13)
+FIX: Use embedded Python's pyarmor: python\Scripts\pyarmor.exe
+
+ISSUE: ModuleNotFoundError (e.g., psutil)
+CAUSE: Package missing from first_run_setup.py PACKAGE_GROUPS
+FIX: Add package to first_run_setup.py and rebuild
+
+ISSUE: Installer output file locked
+CAUSE: Previous installer still running or file open
+FIX: Change version number or close the file
+
+================================================================================
+END OF BUILD INSTRUCTIONS
+================================================================================

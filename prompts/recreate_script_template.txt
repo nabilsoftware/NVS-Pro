@@ -1,0 +1,199 @@
+# Universal Script Rewriter V4 - VIDEO = PARAGRAPH
+# Each video section stays as ONE paragraph
+
+SYSTEM_PROMPT = """You are a script rewriter. Your ENTIRE response is ONLY the rewritten script.
+
+## OUTPUT RULE (CRITICAL)
+
+Your response = ONLY the rewritten script
+- NO thinking
+- NO counting
+- NO "Here's the script"
+- NO headers, labels, dividers, emoji
+- NOTHING except the script
+
+## PARAGRAPH RULE (CRITICAL)
+
+The user will tell you how many paragraphs.
+- Output EXACTLY that number
+- Each paragraph is ONE block of text (can be multiple sentences)
+- Paragraphs are separated by ONE blank line
+- NEVER split one paragraph into multiple
+- NEVER add extra line breaks inside a paragraph
+- Keep each paragraph as ONE continuous block
+
+Example - if input has 2 paragraphs:
+INPUT:
+"First paragraph with multiple sentences here. More sentences. Even more."
+
+"Second paragraph also with sentences. And more here. Final sentence."
+
+OUTPUT:
+"Rewritten first paragraph all together. Different words same meaning. Stays as one block."
+
+"Rewritten second paragraph together. New phrasing throughout. One continuous block."
+
+WRONG (splitting into many):
+"First sentence alone."
+
+"Second sentence alone."
+
+"Third sentence alone."
+
+## REWRITING RULES
+
+- Keep all facts
+- 90%+ of input length
+- Under 10% phrases match original
+- New hooks, fresh transitions
+- Same meaning, different voice
+
+START with first word. END with last word. Only script."""
+
+
+# ============ PYTHON CODE ============
+
+import anthropic
+import re
+
+client = anthropic.Anthropic()
+
+
+def count_videos(text: str) -> int:
+    """Count video sections in text."""
+    # Count video markers
+    video_count = len(re.findall(r'🎬\s*video_\d+', text, flags=re.IGNORECASE))
+    if video_count > 0:
+        return video_count
+    
+    # Fallback: count sections separated by dividers
+    sections = re.split(r'-{3,}', text)
+    sections = [s.strip() for s in sections if s.strip()]
+    if len(sections) > 1:
+        return len(sections)
+    
+    # Fallback: count paragraphs by blank lines
+    paragraphs = [p.strip() for p in re.split(r'\n\s*\n', text) if p.strip()]
+    return len(paragraphs)
+
+
+def extract_video_content(text: str) -> list[str]:
+    """Extract content from each video section."""
+    # Split by video markers or dividers
+    parts = re.split(r'🎬\s*video_\d+|-{3,}', text, flags=re.IGNORECASE)
+    
+    # Clean each part - remove extra whitespace but keep as one block
+    videos = []
+    for part in parts:
+        clean = part.strip()
+        if clean:
+            # Collapse multiple newlines into spaces (keep as one paragraph)
+            clean = re.sub(r'\n+', ' ', clean)
+            clean = re.sub(r'\s+', ' ', clean)
+            videos.append(clean)
+    
+    return videos
+
+
+def rewrite_script(script: str, model: str = "claude-sonnet-4-20250514") -> str:
+    """
+    Rewrite script. Each video = one paragraph.
+    
+    Args:
+        script: The script to rewrite (may contain video markers)
+        model: Claude model to use
+    
+    Returns:
+        Clean rewritten script with same paragraph count
+    """
+    # Extract video content
+    videos = extract_video_content(script)
+    para_count = len(videos)
+    
+    # Join videos with double newlines (each video = one paragraph)
+    clean_script = '\n\n'.join(videos)
+    
+    message = client.messages.create(
+        model=model,
+        max_tokens=16384,
+        system=SYSTEM_PROMPT,
+        messages=[{
+            "role": "user",
+            "content": f"This script has {para_count} paragraphs. Output EXACTLY {para_count} paragraphs. Keep each paragraph as ONE continuous block - do not split. Output ONLY the script:\n\n{clean_script}"
+        }]
+    )
+    return message.content[0].text
+
+
+def rewrite_with_style(script: str, style: str, model: str = "claude-sonnet-4-20250514") -> str:
+    """Rewrite with specific voice style."""
+    videos = extract_video_content(script)
+    para_count = len(videos)
+    clean_script = '\n\n'.join(videos)
+    
+    message = client.messages.create(
+        model=model,
+        max_tokens=16384,
+        system=SYSTEM_PROMPT,
+        messages=[{
+            "role": "user",
+            "content": f"This script has {para_count} paragraphs. Output EXACTLY {para_count} paragraphs. Keep each paragraph as ONE block. Rewrite with a {style} voice. Output ONLY the script:\n\n{clean_script}"
+        }]
+    )
+    return message.content[0].text
+
+
+def batch_rewrite(scripts: list[str], model: str = "claude-sonnet-4-20250514") -> list[str]:
+    """Rewrite multiple scripts."""
+    return [rewrite_script(s, model) for s in scripts]
+
+
+# ============ USAGE ============
+
+if __name__ == "__main__":
+    # Example with 4 videos
+    original = """
+    🎬 video_001
+    First video content here. Multiple sentences in this video. All stays together as one paragraph.
+    
+    ----------------------------------------
+    
+    🎬 video_002
+    Second video content here. Also multiple sentences. This is another single paragraph.
+    
+    ----------------------------------------
+    
+    🎬 video_003
+    Third video with its content. Sentences here too. One paragraph block.
+    
+    ----------------------------------------
+    
+    🎬 video_004
+    Fourth and final video. More content here. Last paragraph.
+    """
+    
+    result = rewrite_script(original)
+    print(f"Videos detected: {count_videos(original)}")
+    print("\nOutput:\n")
+    print(result)
+
+
+# ============ CHAT PROMPT (Copy-Paste Version) ============
+
+CHAT_PROMPT = """You are a script rewriter. Output ONLY the rewritten script.
+
+NEVER OUTPUT: thinking, counting, intros, headers, labels, dividers, emoji
+
+PARAGRAPH RULE:
+- User tells you paragraph count
+- Output EXACTLY that number
+- Each paragraph = ONE continuous block (multiple sentences together)
+- Do NOT split paragraphs into multiple
+- Separate paragraphs with ONE blank line
+
+REWRITING:
+- Same facts, different voice
+- Under 10% phrases match
+- New hooks, fresh transitions
+
+START with first word. END with last word. Nothing else."""

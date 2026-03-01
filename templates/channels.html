@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NVS Pro — Channels</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #111; color: #e0e0e0; min-height: 100vh; }
+  .app { display: flex; height: 100vh; overflow: hidden; }
+
+  /* SIDEBAR */
+  .sb { width: 220px; min-width: 220px; background: #141414; border-right: 1px solid #2a2a2a; display: flex; flex-direction: column; padding: 25px 0 20px 0; }
+  .sb-logo { font-size: 22px; font-weight: 800; color: #fff; padding: 0 24px 25px; }
+  .sb-logo span { color: #e67e22; }
+  .sb-sec { color: #888; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 18px 24px 10px; }
+  .sb-btn { display: flex; align-items: center; gap: 12px; padding: 13px 24px; color: #888; font-size: 14px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.15s; text-decoration: none; }
+  .sb-btn:hover { background: linear-gradient(90deg, rgba(230,126,34,0.12), transparent); color: #e67e22; border-left-color: #e67e22; }
+  .sb-btn.act { background: linear-gradient(90deg, rgba(230,126,34,0.2), rgba(230,126,34,0.05), transparent); color: #e67e22; border-left: 4px solid #e67e22; font-weight: 600; }
+  .sb-btn.dis { opacity: 0.4; cursor: default; }
+  .sb-btn .i { font-size: 16px; width: 20px; text-align: center; }
+  .sb-sp { flex: 1; }
+  .sb-ver { color: #333; font-size: 10px; text-align: center; padding: 10px; }
+  .update-dot { width: 6px; height: 6px; border-radius: 50%; background: #2ecc71; display: inline-block; animation: blink 2s ease infinite; margin-left: 6px; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* MAIN */
+  .mn { flex: 1; overflow-y: auto; padding: 28px 32px 40px; background: #1a1a1a; }
+  .mn::-webkit-scrollbar { width: 6px; }
+  .mn::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+  /* HEADER */
+  .hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .hdr-l { display: flex; align-items: center; gap: 14px; }
+  .hdr h1 { font-size: 22px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+  .hdr-sub { font-size: 12px; color: #555; }
+  .hdr-r { display: flex; align-items: center; gap: 10px; }
+  .hdr-btn { padding: 8px 18px; border-radius: 8px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+  .hdr-btn-accent { background: #e67e22; color: #fff; }
+  .hdr-btn-accent:hover { background: #d35400; }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .st { background: #222; border-radius: 12px; padding: 18px 20px; position: relative; overflow: hidden; }
+  .st::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .st.c1::after { background: linear-gradient(90deg, #e67e22, #f5a623); }
+  .st.c2::after { background: linear-gradient(90deg, #3498db, #5dade2); }
+  .st.c3::after { background: linear-gradient(90deg, #2ecc71, #58d68d); }
+  .st.c4::after { background: linear-gradient(90deg, #9b59b6, #bb8fce); }
+  .st-label { font-size: 10px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .st-val { font-size: 28px; font-weight: 700; color: #fff; line-height: 1; }
+  .st-sub { font-size: 11px; color: #444; margin-top: 5px; }
+
+  /* CARD */
+  .card { background: #222; border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; }
+  .card-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .card-title { font-size: 14px; font-weight: 600; color: #ddd; }
+  .card-acts { display: flex; gap: 8px; }
+  .card-btn { padding: 6px 14px; border-radius: 7px; border: none; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .card-btn-accent { background: rgba(230,126,34,0.12); color: #e67e22; }
+  .card-btn-accent:hover { background: rgba(230,126,34,0.22); }
+  .card-btn-ghost { background: #2a2a2a; color: #888; }
+  .card-btn-ghost:hover { background: #333; color: #ccc; }
+
+  /* CATEGORY CHIPS */
+  .cats { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+  .cat { padding: 5px 14px; border-radius: 16px; border: 1px solid #333; background: transparent; color: #888; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .cat:hover { border-color: #e67e22; color: #e67e22; }
+  .cat.act { background: rgba(230,126,34,0.12); border-color: #e67e22; color: #e67e22; }
+
+  /* CHANNEL GRID */
+  .ch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .ch-card { background: #222; border-radius: 12px; padding: 20px; border: 1px solid #2a2a2a; transition: all 0.15s; position: relative; overflow: hidden; }
+  .ch-card:hover { border-color: #3a3a3a; }
+  .ch-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); }
+  .ch-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .ch-av { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0; overflow: hidden; }
+  .ch-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .ch-logo-upload { position: relative; cursor: pointer; }
+  .ch-logo-upload:hover::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.5); border-radius: 50%; }
+  .ch-logo-upload:hover::before { content: '\\1F4F7'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 1; font-size: 16px; }
+  .ch-main { flex: 1; min-width: 0; }
+  .ch-name { font-size: 15px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ch-cat { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 9px; font-weight: 700; color: #e67e22; background: rgba(230,126,34,0.1); text-transform: uppercase; margin-top: 4px; }
+  .ch-fields { display: flex; flex-direction: column; gap: 8px; }
+  .ch-field { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .ch-field-icon { color: #555; width: 16px; text-align: center; font-size: 13px; }
+  .ch-field-label { color: #555; min-width: 55px; }
+  .ch-field-val { color: #bbb; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ch-field-val.mono { font-family: 'Cascadia Code','Consolas',monospace; font-size: 11px; color: #888; }
+  .ch-actions { display: flex; gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #2a2a2a; }
+  .ch-act { flex: 1; padding: 7px 0; border-radius: 7px; border: none; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; text-align: center; }
+  .ch-act-edit { background: rgba(230,126,34,0.1); color: #e67e22; }
+  .ch-act-edit:hover { background: rgba(230,126,34,0.2); }
+  .ch-act-json { background: rgba(52,152,219,0.1); color: #3498db; }
+  .ch-act-json:hover { background: rgba(52,152,219,0.2); }
+  .ch-empty { color: #444; font-size: 14px; text-align: center; padding: 40px; }
+
+  /* EDIT MODAL */
+  .modal-bg { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
+  .modal-bg.show { display: flex; }
+  .modal { background: #1e1e1e; border-radius: 14px; border: 1px solid #333; width: 560px; max-height: 85vh; overflow-y: auto; padding: 24px; }
+  .modal::-webkit-scrollbar { width: 4px; }
+  .modal::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+  .modal h2 { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 18px; }
+  .m-row { margin-bottom: 14px; }
+  .m-label { font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .m-input { width: 100%; padding: 9px 14px; border-radius: 8px; border: 1px solid #333; background: #252525; color: #e0e0e0; font-size: 13px; font-family: inherit; outline: none; }
+  .m-input:focus { border-color: #e67e22; }
+  .m-input::placeholder { color: #444; }
+  select.m-input { cursor: pointer; }
+  .m-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .m-slider-row { display: flex; align-items: center; gap: 12px; }
+  .m-slider { flex: 1; -webkit-appearance: none; height: 4px; border-radius: 2px; background: #333; outline: none; }
+  .m-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #e67e22; cursor: pointer; }
+  .m-slider-val { font-size: 13px; color: #e67e22; font-weight: 600; min-width: 36px; text-align: right; }
+  .m-check { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; color: #bbb; }
+  .m-check input { accent-color: #e67e22; width: 16px; height: 16px; }
+  .m-footer { display: flex; gap: 10px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #2a2a2a; }
+  .m-btn { flex: 1; padding: 10px 0; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .m-btn-save { background: #e67e22; color: #fff; }
+  .m-btn-save:hover { background: #d35400; }
+  .m-btn-cancel { background: #2a2a2a; color: #888; }
+  .m-btn-cancel:hover { background: #333; color: #ccc; }
+
+  /* JSON MODAL */
+  .json-area { width: 100%; min-height: 350px; background: #181818; border: 1px solid #2a2a2a; border-radius: 8px; padding: 14px; font-family: 'Cascadia Code','Consolas',monospace; font-size: 11px; color: #4a9; line-height: 1.7; resize: vertical; outline: none; }
+  .json-area:focus { border-color: #e67e22; }
+  .json-err { color: #e74c3c; font-size: 11px; margin-top: 6px; display: none; }
+
+  /* CATEGORY MANAGER */
+  .cat-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #252525; border-radius: 8px; margin-bottom: 8px; }
+  .cat-name { font-size: 13px; font-weight: 600; color: #e67e22; flex: 1; }
+  .cat-count { font-size: 11px; color: #555; }
+  .cat-del { width: 28px; height: 28px; border-radius: 6px; border: none; background: transparent; color: #555; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .cat-del:hover { color: #e74c3c; background: rgba(231,76,60,0.1); }
+  .cat-paths { padding: 0 14px 14px; }
+  .cat-path-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .cat-path-label { font-size: 10px; font-weight: 600; color: #555; min-width: 90px; text-transform: uppercase; }
+  .cat-path-val { flex: 1; font-size: 11px; color: #888; font-family: 'Cascadia Code','Consolas',monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: #333; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transform: translateY(80px); opacity: 0; transition: transform 0.3s, opacity 0.3s; z-index: 300; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.ok { border-left: 4px solid #2ecc71; }
+  .toast.err { border-left: 4px solid #e74c3c; }
+  @media (max-width: 900px) { .sb { display: none; } .stats { grid-template-columns: repeat(2, 1fr); } .ch-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sb">
+    <div class="sb-logo">NVS <span>Pro</span></div>
+    <div class="sb-sec">MAIN</div>
+    <a class="sb-btn" href="/recreate"><span class="i">&#x1F504;</span> Recreate Video</a>
+    <a class="sb-btn" href="/create"><span class="i">&#x1F3AC;</span> Create Video</a>
+    <a class="sb-btn act" href="/channels"><span class="i">&#x1F4FA;</span> Channels</a>
+    <a class="sb-btn" href="/"><span class="i">&#x1F916;</span> Automation</a>
+    <div class="sb-sec">TOOLS</div>
+    <a class="sb-btn dis" href="#"><span class="i">&#x1F3A8;</span> Thumbnails</a>
+    <a class="sb-btn" href="/ytdl"><span class="i">&#x1F4E5;</span> YouTube DL</a>
+    <a class="sb-btn dis" href="#"><span class="i">&#x1F3A4;</span> Script to Voice</a>
+    <div class="sb-sec">SETTINGS</div>
+    <a class="sb-btn dis" href="#"><span class="i">&#x2699;&#xFE0F;</span> Settings</a>
+    <a class="sb-btn dis" href="#"><span class="i">&#x1F3A4;</span> Voices</a>
+    <a class="sb-btn dis" href="#"><span class="i">&#x1F511;</span> API Keys</a>
+    <div class="sb-sp"></div>
+    <div class="sb-ver">Web Dashboard<span class="update-dot"></span></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="mn">
+    <div class="hdr">
+      <div class="hdr-l">
+        <div>
+          <h1>Channels</h1>
+          <div class="hdr-sub">Manage your YouTube channel profiles</div>
+        </div>
+      </div>
+      <div class="hdr-r">
+        <button class="hdr-btn hdr-btn-accent" onclick="showCatMgr()">Manage Categories</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="st c1"><div class="st-label">Total Channels</div><div class="st-val" id="st-total">0</div><div class="st-sub">profiles configured</div></div>
+      <div class="st c2"><div class="st-label">Categories</div><div class="st-val" id="st-cats">0</div><div class="st-sub">channel groups</div></div>
+      <div class="st c3"><div class="st-label">With Voice</div><div class="st-val" id="st-voice">0</div><div class="st-sub">voice assigned</div></div>
+      <div class="st c4"><div class="st-label">Auto Upload</div><div class="st-val" id="st-upload">0</div><div class="st-sub">upload enabled</div></div>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="cats" id="cats"></div>
+
+    <!-- Channel Grid -->
+    <div class="ch-grid" id="ch-grid"><div class="ch-empty">Loading channels...</div></div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-bg" id="edit-modal">
+  <div class="modal">
+    <h2 id="edit-title">Edit Channel</h2>
+    <div class="m-row"><div class="m-label">Channel Name</div><input class="m-input" id="ed-name" readonly style="color:#666;"></div>
+    <div class="m-pair">
+      <div class="m-row"><div class="m-label">Suffix</div><input class="m-input" id="ed-suffix" placeholder="output suffix"></div>
+      <div class="m-row"><div class="m-label">Category</div><select class="m-input" id="ed-category"></select></div>
+    </div>
+    <div class="m-row"><div class="m-label">Description</div><input class="m-input" id="ed-desc" placeholder="Channel description"></div>
+    <div class="m-pair">
+      <div class="m-row"><div class="m-label">Default Voice</div><input class="m-input" id="ed-voice" placeholder="Voice name"></div>
+      <div class="m-row"><div class="m-label">Background Video</div><input class="m-input" id="ed-bgvideo" placeholder="Path to background video"></div>
+    </div>
+    <div class="m-pair">
+      <div class="m-row"><div class="m-label">Background Music</div><input class="m-input" id="ed-bgmusic" placeholder="Path to music file"></div>
+      <div class="m-row"><div class="m-label">Logo Path</div><input class="m-input" id="ed-logo" placeholder="Path to logo image"></div>
+    </div>
+    <div class="m-pair">
+      <div class="m-row">
+        <div class="m-label">Voice Level</div>
+        <div class="m-slider-row"><input type="range" class="m-slider" id="ed-vlevel" min="0" max="2" step="0.1" value="1.2" oninput="document.getElementById('ed-vlevel-v').textContent=this.value"><span class="m-slider-val" id="ed-vlevel-v">1.2</span></div>
+      </div>
+      <div class="m-row">
+        <div class="m-label">Music Level</div>
+        <div class="m-slider-row"><input type="range" class="m-slider" id="ed-mlevel" min="0" max="1" step="0.01" value="0.09" oninput="document.getElementById('ed-mlevel-v').textContent=this.value"><span class="m-slider-val" id="ed-mlevel-v">0.09</span></div>
+      </div>
+    </div>
+    <div class="m-pair">
+      <div class="m-row">
+        <div class="m-label">Video Scale</div>
+        <div class="m-slider-row"><input type="range" class="m-slider" id="ed-scale" min="0.5" max="1" step="0.05" value="0.85" oninput="document.getElementById('ed-scale-v').textContent=this.value"><span class="m-slider-val" id="ed-scale-v">0.85</span></div>
+      </div>
+      <div class="m-row"><div class="m-label">Frame Color</div><input class="m-input" id="ed-fcolor" type="color" value="#ffffff" style="height:38px;padding:4px;"></div>
+    </div>
+    <div class="m-pair">
+      <div class="m-row"><label class="m-check"><input type="checkbox" id="ed-crop"> Manual Crop</label></div>
+      <div class="m-row"><label class="m-check"><input type="checkbox" id="ed-anim"> Animations</label></div>
+    </div>
+    <div class="m-pair">
+      <div class="m-row"><label class="m-check"><input type="checkbox" id="ed-upload"> Auto Upload</label></div>
+      <div class="m-row"><div class="m-label">Upload Wait (min)</div><input class="m-input" id="ed-uwait" type="number" min="1" max="60" value="5"></div>
+    </div>
+    <div class="m-pair">
+      <div class="m-row"><div class="m-label">YouTube Channel</div><input class="m-input" id="ed-ytch" placeholder="Channel name"></div>
+      <div class="m-row"><div class="m-label">Browser Profile</div><input class="m-input" id="ed-bprof" placeholder="Profile name"></div>
+    </div>
+    <div class="m-footer">
+      <button class="m-btn m-btn-cancel" onclick="closeEdit()">Cancel</button>
+      <button class="m-btn m-btn-save" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- JSON Modal -->
+<div class="modal-bg" id="json-modal">
+  <div class="modal" style="width:620px;">
+    <h2 id="json-title">Channel JSON</h2>
+    <textarea class="json-area" id="json-content" spellcheck="false"></textarea>
+    <div class="json-err" id="json-err"></div>
+    <div class="m-footer">
+      <button class="m-btn m-btn-cancel" onclick="document.getElementById('json-modal').classList.remove('show')">Close</button>
+      <button class="m-btn m-btn-save" onclick="saveJson()">Save JSON</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden file input for logo upload -->
+<input type="file" id="logo-upload" accept="image/*" style="display:none;" onchange="uploadLogo(this)">
+
+<!-- Category Manager Modal -->
+<div class="modal-bg" id="cat-modal">
+  <div class="modal" style="width:500px;">
+    <h2>Manage Categories</h2>
+    <div id="cat-list"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <input class="m-input" id="new-cat" placeholder="New category name..." style="flex:1;" onkeydown="if(event.key==='Enter')addCat()">
+      <button class="m-btn m-btn-save" style="flex:0;padding:10px 20px;" onclick="addCat()">Add</button>
+    </div>
+    <div class="m-footer">
+      <button class="m-btn m-btn-cancel" onclick="document.getElementById('cat-modal').classList.remove('show')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var AVC=['#e74c3c','#3498db','#2ecc71','#9b59b6','#e67e22','#f39c12','#1abc9c','#e91e63'];
+var profs=[];
+var allProfs={};
+var cats={};
+var catList=[];
+var aCat='ALL';
+var tTmr=null;
+var editName='';
+
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function toast(m,t){var e=document.getElementById('toast');e.textContent=m;e.className='toast show '+(t||'');clearTimeout(tTmr);tTmr=setTimeout(function(){e.className='toast';},3000);}
+
+// LOAD DATA
+async function loadData(){
+  try{
+    var res=await fetch('/api/channels/full');
+    var data=await res.json();
+    profs=data.profiles||[];
+    allProfs=data.profiles_data||{};
+    cats=data.categories||{};
+    catList=data.category_list||[];
+    renderCats();
+    renderGrid();
+    updateStats();
+  }catch(e){
+    document.getElementById('ch-grid').innerHTML='<div class="ch-empty">Failed to load channels</div>';
+  }
+}
+
+function updateStats(){
+  document.getElementById('st-total').textContent=profs.length;
+  var cs={};profs.forEach(function(p){cs[p.category||'Default']=1;});
+  document.getElementById('st-cats').textContent=Object.keys(cs).length;
+  document.getElementById('st-voice').textContent=profs.filter(function(p){return p.default_voice;}).length;
+  document.getElementById('st-upload').textContent=profs.filter(function(p){return allProfs[p.name]&&allProfs[p.name].enable_upload;}).length;
+}
+
+// CATEGORIES
+function renderCats(){
+  var cs={};
+  profs.forEach(function(p){var c=p.category||'Default';if(!cs[c])cs[c]=0;cs[c]++;});
+  var h='<button class="cat'+(aCat==='ALL'?' act':'')+'" onclick="fCat(\'ALL\')">All ('+profs.length+')</button>';
+  Object.keys(cs).forEach(function(c){
+    h+='<button class="cat'+(aCat===c?' act':'')+'" onclick="fCat(\''+esc(c)+'\')">'+esc(c)+' ('+cs[c]+')</button>';
+  });
+  document.getElementById('cats').innerHTML=h;
+}
+function fCat(c){aCat=c;renderCats();renderGrid();}
+
+// CHANNEL GRID
+var logoUploadName='';
+function renderGrid(){
+  var list=profs;
+  if(aCat!=='ALL')list=profs.filter(function(p){return(p.category||'Default')===aCat;});
+  if(!list.length){document.getElementById('ch-grid').innerHTML='<div class="ch-empty">No channels in this category</div>';return;}
+  var h='';
+  list.forEach(function(p,i){
+    var n=p.name;
+    var full=allProfs[n]||{};
+    var c=p.category||'Default';
+    var v=p.default_voice||'—';
+    var clr=AVC[i%AVC.length];
+    var upload=full.enable_upload?'Yes':'No';
+    var suffix=full.suffix||'—';
+    var hasLogo=!!full.logo_path;
+    h+='<div class="ch-card" style="--accent:'+clr+'">';
+    h+='<div class="ch-top">';
+    h+='<div class="ch-av ch-logo-upload" style="background:'+clr+'" onclick="pickLogo(\''+esc(n)+'\')" title="Click to change logo">';
+    if(hasLogo){
+      h+='<img src="/api/channels/logo/'+encodeURIComponent(n)+'?t='+Date.now()+'" onerror="this.remove()">';
+    } else {
+      h+=esc(n.charAt(0));
+    }
+    h+='</div>';
+    h+='<div class="ch-main"><div class="ch-name">'+esc(n)+'</div><div class="ch-cat">'+esc(c)+'</div></div>';
+    h+='</div>';
+    h+='<div class="ch-fields">';
+    h+='<div class="ch-field"><span class="ch-field-icon">&#x1F3A4;</span><span class="ch-field-label">Voice</span><span class="ch-field-val">'+esc(v)+'</span></div>';
+    h+='<div class="ch-field"><span class="ch-field-icon">&#x1F4E4;</span><span class="ch-field-label">Upload</span><span class="ch-field-val">'+upload+'</span></div>';
+    h+='<div class="ch-field"><span class="ch-field-icon">&#x1F3AC;</span><span class="ch-field-label">Suffix</span><span class="ch-field-val mono">'+esc(suffix)+'</span></div>';
+    if(full.background_video){
+      var bv=full.background_video.split(/[/\\]/).pop();
+      h+='<div class="ch-field"><span class="ch-field-icon">&#x1F3A5;</span><span class="ch-field-label">BG Vid</span><span class="ch-field-val mono">'+esc(bv)+'</span></div>';
+    }
+    h+='</div>';
+    h+='<div class="ch-actions">';
+    h+='<button class="ch-act ch-act-edit" onclick="openEdit(\''+esc(n)+'\')">Edit</button>';
+    h+='<button class="ch-act ch-act-json" onclick="showJson(\''+esc(n)+'\')">JSON</button>';
+    h+='</div>';
+    h+='</div>';
+  });
+  document.getElementById('ch-grid').innerHTML=h;
+}
+
+// LOGO UPLOAD
+function pickLogo(name){
+  logoUploadName=name;
+  document.getElementById('logo-upload').click();
+}
+async function uploadLogo(inp){
+  if(!inp.files.length||!logoUploadName)return;
+  var fd=new FormData();
+  fd.append('logo',inp.files[0]);
+  try{
+    var res=await fetch('/api/channels/upload-logo/'+encodeURIComponent(logoUploadName),{method:'POST',body:fd});
+    var r=await res.json();
+    if(r.ok){toast('Logo updated!','ok');loadData();}
+    else toast(r.error||'Upload failed','err');
+  }catch(e){toast('Upload failed','err');}
+  inp.value='';
+}
+
+// EDIT MODAL
+function openEdit(name){
+  editName=name;
+  var p=allProfs[name]||{};
+  document.getElementById('edit-title').textContent='Edit — '+name;
+  document.getElementById('ed-name').value=name;
+  document.getElementById('ed-suffix').value=p.suffix||'';
+  document.getElementById('ed-desc').value=p.description||'';
+  document.getElementById('ed-voice').value=p.default_voice||'';
+  document.getElementById('ed-bgvideo').value=p.background_video||'';
+  document.getElementById('ed-bgmusic').value=p.background_music||'';
+  document.getElementById('ed-logo').value=p.logo_path||'';
+  var vl=p.voice_level!==undefined?p.voice_level:1.2;
+  document.getElementById('ed-vlevel').value=vl;
+  document.getElementById('ed-vlevel-v').textContent=vl;
+  var ml=p.music_level!==undefined?p.music_level:0.09;
+  document.getElementById('ed-mlevel').value=ml;
+  document.getElementById('ed-mlevel-v').textContent=ml;
+  var sc=p.video_scale!==undefined?p.video_scale:0.85;
+  document.getElementById('ed-scale').value=sc;
+  document.getElementById('ed-scale-v').textContent=sc;
+  document.getElementById('ed-fcolor').value=p.frame_color||'#ffffff';
+  document.getElementById('ed-crop').checked=p.use_manual_crop!==false;
+  document.getElementById('ed-anim').checked=p.enable_animation!==false;
+  document.getElementById('ed-upload').checked=!!p.enable_upload;
+  document.getElementById('ed-uwait').value=p.upload_wait_minutes||5;
+  document.getElementById('ed-ytch').value=p.youtube_channel||'';
+  document.getElementById('ed-bprof').value=p.browser_profile||'';
+  // Populate category dropdown
+  var sel=document.getElementById('ed-category');
+  sel.innerHTML='';
+  catList.forEach(function(c){
+    var o=document.createElement('option');o.value=c;o.textContent=c;
+    if(c===(p.category||'Default'))o.selected=true;
+    sel.appendChild(o);
+  });
+  document.getElementById('edit-modal').classList.add('show');
+}
+function closeEdit(){document.getElementById('edit-modal').classList.remove('show');}
+
+async function saveEdit(){
+  var data={
+    name:editName,
+    suffix:document.getElementById('ed-suffix').value.trim(),
+    category:document.getElementById('ed-category').value,
+    description:document.getElementById('ed-desc').value.trim(),
+    default_voice:document.getElementById('ed-voice').value.trim(),
+    background_video:document.getElementById('ed-bgvideo').value.trim(),
+    background_music:document.getElementById('ed-bgmusic').value.trim(),
+    logo_path:document.getElementById('ed-logo').value.trim(),
+    voice_level:parseFloat(document.getElementById('ed-vlevel').value),
+    music_level:parseFloat(document.getElementById('ed-mlevel').value),
+    video_scale:parseFloat(document.getElementById('ed-scale').value),
+    frame_color:document.getElementById('ed-fcolor').value,
+    use_manual_crop:document.getElementById('ed-crop').checked,
+    enable_animation:document.getElementById('ed-anim').checked,
+    enable_upload:document.getElementById('ed-upload').checked,
+    upload_wait_minutes:parseInt(document.getElementById('ed-uwait').value)||5,
+    youtube_channel:document.getElementById('ed-ytch').value.trim(),
+    browser_profile:document.getElementById('ed-bprof').value.trim(),
+  };
+  try{
+    var res=await fetch('/api/channels/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    var r=await res.json();
+    if(r.ok){toast('Channel saved!','ok');closeEdit();loadData();}
+    else toast('Error: '+(r.error||'Unknown'),'err');
+  }catch(e){toast('Save failed','err');}
+}
+
+// JSON EDIT
+var jsonEditName='';
+function showJson(name){
+  jsonEditName=name;
+  var p=allProfs[name]||{};
+  document.getElementById('json-title').textContent='JSON — '+name;
+  document.getElementById('json-content').value=JSON.stringify(p,null,2);
+  document.getElementById('json-err').style.display='none';
+  document.getElementById('json-modal').classList.add('show');
+}
+async function saveJson(){
+  var raw=document.getElementById('json-content').value;
+  var errEl=document.getElementById('json-err');
+  var data;
+  try{
+    data=JSON.parse(raw);
+  }catch(e){
+    errEl.textContent='Invalid JSON: '+e.message;
+    errEl.style.display='block';
+    return;
+  }
+  errEl.style.display='none';
+  // Ensure name stays correct
+  data.name=jsonEditName;
+  try{
+    var res=await fetch('/api/channels/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    var r=await res.json();
+    if(r.ok){toast('Channel saved from JSON!','ok');document.getElementById('json-modal').classList.remove('show');loadData();}
+    else toast('Error: '+(r.error||'Unknown'),'err');
+  }catch(e){toast('Save failed','err');}
+}
+
+// CATEGORY MANAGER
+function showCatMgr(){
+  renderCatList();
+  document.getElementById('cat-modal').classList.add('show');
+}
+function renderCatList(){
+  var h='';
+  catList.forEach(function(c){
+    var count=profs.filter(function(p){return(p.category||'Default')===c;}).length;
+    var cd=cats[c]||{};
+    h+='<div class="cat-row">';
+    h+='<span class="cat-name">'+esc(c)+'</span>';
+    h+='<span class="cat-count">'+count+' channels</span>';
+    if(c!=='Default')h+='<button class="cat-del" onclick="delCat(\''+esc(c)+'\')" title="Delete">&#x2715;</button>';
+    h+='</div>';
+    // Show paths
+    h+='<div class="cat-paths">';
+    if(cd.input_path)h+='<div class="cat-path-row"><span class="cat-path-label">RV Input</span><span class="cat-path-val">'+esc(cd.input_path)+'</span></div>';
+    if(cd.output_path)h+='<div class="cat-path-row"><span class="cat-path-label">RV Output</span><span class="cat-path-val">'+esc(cd.output_path)+'</span></div>';
+    if(cd.cc_interviews_path)h+='<div class="cat-path-row"><span class="cat-path-label">CC Input</span><span class="cat-path-val">'+esc(cd.cc_interviews_path)+'</span></div>';
+    if(cd.cc_broll_path)h+='<div class="cat-path-row"><span class="cat-path-label">CC B-Roll</span><span class="cat-path-val">'+esc(cd.cc_broll_path)+'</span></div>';
+    if(cd.cc_output_path)h+='<div class="cat-path-row"><span class="cat-path-label">CC Output</span><span class="cat-path-val">'+esc(cd.cc_output_path)+'</span></div>';
+    h+='</div>';
+  });
+  document.getElementById('cat-list').innerHTML=h||'<div style="color:#555;padding:12px;">No categories</div>';
+}
+
+async function addCat(){
+  var inp=document.getElementById('new-cat');
+  var n=inp.value.trim();
+  if(!n){toast('Enter name','err');return;}
+  try{
+    var res=await fetch('/api/channels/add-category',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n})});
+    var r=await res.json();
+    if(r.ok){toast('Category added','ok');inp.value='';loadData().then(function(){renderCatList();});}
+    else toast(r.error||'Failed','err');
+  }catch(e){toast('Failed','err');}
+}
+
+async function delCat(name){
+  if(!confirm('Delete "'+name+'"? Channels will be moved to Default.')){return;}
+  try{
+    var res=await fetch('/api/channels/delete-category',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name})});
+    var r=await res.json();
+    if(r.ok){toast('Category deleted','ok');loadData().then(function(){renderCatList();});}
+    else toast(r.error||'Failed','err');
+  }catch(e){toast('Failed','err');}
+}
+
+// INIT
+loadData();
+</script>
+</body>
+</html>

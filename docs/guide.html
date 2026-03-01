@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nabil Video Studio Pro - Complete Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        /* Navigation */
+        nav {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        nav h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        nav a {
+            color: #e0e0e0;
+            text-decoration: none;
+            padding: 8px 15px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        nav a:hover {
+            background: #667eea;
+            transform: translateY(-2px);
+        }
+
+        /* Sections */
+        section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+        }
+
+        section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        section h3 {
+            color: #9f7aea;
+            margin: 20px 0 10px 0;
+            font-size: 1.3em;
+        }
+
+        section h4 {
+            color: #68d391;
+            margin: 15px 0 10px 0;
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .card-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        /* Step Cards */
+        .step-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .step-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 50px;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .step-title {
+            font-size: 1.4em;
+            color: #fff;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        th {
+            background: rgba(102, 126, 234, 0.3);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        /* Code blocks */
+        code {
+            background: rgba(0,0,0,0.4);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            color: #68d391;
+        }
+
+        pre {
+            background: rgba(0,0,0,0.4);
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 10px 0 10px 25px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        /* Links */
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .external-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(102, 126, 234, 0.2);
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+
+        .external-link:hover {
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .alert-info {
+            background: rgba(66, 153, 225, 0.2);
+            border-left: 4px solid #4299e1;
+        }
+
+        .alert-warning {
+            background: rgba(237, 137, 54, 0.2);
+            border-left: 4px solid #ed8936;
+        }
+
+        .alert-success {
+            background: rgba(72, 187, 120, 0.2);
+            border-left: 4px solid #48bb78;
+        }
+
+        .alert-danger {
+            background: rgba(245, 101, 101, 0.2);
+            border-left: 4px solid #f56565;
+        }
+
+        /* Flow diagram */
+        .flow-diagram {
+            background: rgba(0,0,0,0.3);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .flow-diagram pre {
+            background: none;
+            border: none;
+            color: #68d391;
+            font-size: 0.85em;
+        }
+
+        /* Price tag */
+        .price-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .price-tag.free {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+        }
+
+        .price-tag.paid {
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #888;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            nav ul {
+                flex-direction: column;
+            }
+
+            .step-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .step-number {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>Nabil Video Studio Pro</h1>
+            <p>Complete Video Automation Pipeline - From Raw Footage to YouTube</p>
+            <span class="version-badge">Version 1.3.8</span>
+        </header>
+
+        <!-- Navigation -->
+        <nav>
+            <h3>Quick Navigation</h3>
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#requirements">Requirements</a></li>
+                <li><a href="#setup">Setup & APIs</a></li>
+                <li><a href="#modes">Processing Modes</a></li>
+                <li><a href="#steps">Pipeline Steps</a></li>
+                <li><a href="#profiles">Profiles & Channels</a></li>
+                <li><a href="#settings">Settings</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+            </ul>
+        </nav>
+
+        <!-- Overview Section -->
+        <section id="overview">
+            <h2>Overview</h2>
+            <p>Nabil Video Studio Pro is an automated video processing pipeline that transforms raw video footage into polished, viral-ready content for YouTube. The software handles everything from speaker detection to AI script rewriting, voiceover generation, and automatic upload.</p>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">🎬</div>
+                    <h4>Video Processing</h4>
+                    <p>Automatic speaker detection, clip cutting, and styling with animations</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🤖</div>
+                    <h4>AI-Powered</h4>
+                    <p>Script rewriting with Gemini/Claude AI for viral engagement</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🎙️</div>
+                    <h4>Voice Generation</h4>
+                    <p>Professional voiceovers using Fish Audio TTS technology</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📤</div>
+                    <h4>Auto Upload</h4>
+                    <p>Direct upload to multiple YouTube channels</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Requirements Section -->
+        <section id="requirements">
+            <h2>System Requirements</h2>
+
+            <h3>Hardware</h3>
+            <table>
+                <tr>
+                    <th>Component</th>
+                    <th>Minimum</th>
+                    <th>Recommended</th>
+                </tr>
+                <tr>
+                    <td>CPU</td>
+                    <td>Intel i5 / AMD Ryzen 5</td>
+                    <td>Intel i7 / AMD Ryzen 7+</td>
+                </tr>
+                <tr>
+                    <td>RAM</td>
+                    <td>8 GB</td>
+                    <td>16 GB+</td>
+                </tr>
+                <tr>
+                    <td>GPU</td>
+                    <td>Any (CPU fallback)</td>
+                    <td>NVIDIA GTX 1060+ (CUDA support)</td>
+                </tr>
+                <tr>
+                    <td>Storage</td>
+                    <td>50 GB free</td>
+                    <td>200 GB+ SSD</td>
+                </tr>
+            </table>
+
+            <h3>Software</h3>
+            <ul>
+                <li>Windows 10/11 (64-bit)</li>
+                <li>Google Chrome browser (for Fish Audio & YouTube)</li>
+                <li>Internet connection (for AI APIs)</li>
+            </ul>
+        </section>
+
+        <!-- Setup & APIs Section -->
+        <section id="setup">
+            <h2>Setup & API Configuration</h2>
+
+            <h3>Required APIs & Services</h3>
+
+            <div class="step-card">
+                <h4>1. Google Gemini API <span class="price-tag free">Free Tier Available</span></h4>
+                <p>Used for: AI script rewriting, thumbnail ideas generation</p>
+                <ul>
+                    <li>Go to: <a href="https://aistudio.google.com/apikey" target="_blank" class="external-link">https://aistudio.google.com/apikey</a></li>
+                    <li>Sign in with Google account</li>
+                    <li>Click "Create API Key"</li>
+                    <li>Copy the API key to Settings > API Keys</li>
+                </ul>
+                <div class="alert alert-info">
+                    <strong>Free Tier:</strong> 60 requests/minute, 1500 requests/day - enough for most users!
+                </div>
+            </div>
+
+            <div class="step-card">
+                <h4>2. Claude API (Optional) <span class="price-tag paid">Paid</span></h4>
+                <p>Used for: Alternative AI script rewriting (higher quality)</p>
+                <ul>
+                    <li>Go to: <a href="https://console.anthropic.com/" target="_blank" class="external-link">https://console.anthropic.com/</a></li>
+                    <li>Create account and add payment method</li>
+                    <li>Go to API Keys > Create Key</li>
+                    <li>Copy to Settings > API Keys</li>
+                </ul>
+                <div class="alert alert-warning">
+                    <strong>Pricing:</strong> ~$3 per 1M input tokens, ~$15 per 1M output tokens
+                </div>
+            </div>
+
+            <div class="step-card">
+                <h4>3. Fish Audio (Voice Generation) <span class="price-tag paid">Paid for API</span></h4>
+                <p>Used for: AI voiceover generation with realistic voices</p>
+
+                <h5>Option A: Browser Method (Recommended - Uses Your Subscription)</h5>
+                <ul>
+                    <li>Go to: <a href="https://fish.audio/" target="_blank" class="external-link">https://fish.audio/</a></li>
+                    <li>Create account and subscribe to a plan</li>
+                    <li>The software will open browser and use your logged-in session</li>
+                    <li>Login once, cookies are saved for future use</li>
+                </ul>
+
+                <h5>Option B: API Method (Direct API calls)</h5>
+                <ul>
+                    <li>Go to Fish Audio dashboard</li>
+                    <li>Navigate to API section</li>
+                    <li>Generate API key</li>
+                    <li>Add to Settings > API Keys > Fish Audio API Key</li>
+                </ul>
+
+                <div class="alert alert-info">
+                    <strong>Fish Audio Plans:</strong><br>
+                    - Free: Limited characters/month<br>
+                    - Basic: ~$10/month - 100,000 characters<br>
+                    - Pro: ~$30/month - 500,000 characters<br>
+                    - Enterprise: Custom pricing
+                </div>
+
+                <div class="alert alert-success">
+                    <strong>Tip:</strong> Browser method uses your subscription directly - no separate API costs!
+                </div>
+            </div>
+
+            <div class="step-card">
+                <h4>4. YouTube Channel Setup</h4>
+                <p>Used for: Automatic video upload</p>
+                <ul>
+                    <li>Each profile can have its own YouTube channel</li>
+                    <li>First upload will ask you to login in browser</li>
+                    <li>Cookies are saved per channel profile</li>
+                    <li>Videos upload as UNLISTED (you publish manually)</li>
+                </ul>
+                <div class="alert alert-warning">
+                    <strong>Important:</strong> Login is saved in browser profile. Don't delete <code>browser_profiles</code> folder!
+                </div>
+            </div>
+        </section>
+
+        <!-- Processing Modes Section -->
+        <section id="modes">
+            <h2>Processing Modes</h2>
+
+            <div class="card-grid">
+                <div class="card">
+                    <h4>🎬 Create Video Mode</h4>
+                    <p>Start from scratch with a new raw video</p>
+                    <ul>
+                        <li>Input: Single video file</li>
+                        <li>Runs all steps 0-10</li>
+                        <li>Choose single profile or multiple</li>
+                        <li>Best for: New content</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🔄 Recreate Video Mode</h4>
+                    <p>Update or regenerate existing project</p>
+                    <ul>
+                        <li>Input: Existing project folder</li>
+                        <li>Auto-skips completed steps</li>
+                        <li>Resume from any step</li>
+                        <li>Best for: Fixing/updating videos</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Profile Modes</h3>
+            <table>
+                <tr>
+                    <th>Mode</th>
+                    <th>Description</th>
+                    <th>Output</th>
+                </tr>
+                <tr>
+                    <td><strong>Single Profile</strong></td>
+                    <td>One prompt + one voice = one video</td>
+                    <td>1 final video</td>
+                </tr>
+                <tr>
+                    <td><strong>Multiple Profiles</strong></td>
+                    <td>Multiple prompts + voices = multiple videos</td>
+                    <td>1 video per profile</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Pipeline Steps Section -->
+        <section id="steps">
+            <h2>Pipeline Steps (0-10)</h2>
+
+            <div class="flow-diagram">
+                <pre>
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              INPUT VIDEO                                     │
+│                         (MP4, MKV, AVI, MOV)                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  STEP 0: Copy Original Video                                                │
+│  └── Backup original file to 0_original_video/                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  STEP 1: Diarize & Cut                                                      │
+│  └── Speaker detection → Cut into clips                                     │
+│      ├── 1_clips/voiceover/    (gaps between speech)                        │
+│      └── 1_clips/interviews/   (speaker talking)                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+                          │                           │
+                          ▼                           ▼
+┌────────────────────────────────────┐  ┌────────────────────────────────────┐
+│  STEP 2: Style Interview Clips     │  │  STEP 3: Transcribe                │
+│  └── Add frame, background,        │  │  └── Speech-to-text (Whisper)      │
+│      animations, sound effects     │  │      Output: raw_transcript.txt    │
+│      Output: 2_styled_clips/       │  └────────────────────────────────────┘
+└────────────────────────────────────┘                  │
+                │                                       ▼
+                │                     ┌────────────────────────────────────┐
+                │                     │  STEP 4: AI Rewrite Script         │
+                │                     │  └── Gemini/Claude transforms      │
+                │                     │      transcript into viral script  │
+                │                     │      Output: rewritten_script.txt  │
+                │                     └────────────────────────────────────┘
+                │                                       │
+                │                                       ▼
+                │                     ┌────────────────────────────────────┐
+                │                     │  STEP 5: Generate Voiceover        │
+                │                     │  └── Fish Audio TTS                │
+                │                     │      Output: 5_voiceovers/*.mp3    │
+                │                     └────────────────────────────────────┘
+                │                                       │
+                │                                       ▼
+                │                     ┌────────────────────────────────────┐
+                │                     │  STEP 6: Arrange B-Roll            │
+                │                     │  └── Create 6-second clips         │
+                │                     │      Output: 6_6sec_clips/         │
+                │                     └────────────────────────────────────┘
+                │                                       │
+                │                                       ▼
+                │                     ┌────────────────────────────────────┐
+                │                     │  STEP 7: Assemble Final Video      │
+                │                     │  └── Voiceover + B-Roll + Music    │
+                │                     │      Output: 7_final_videos/       │
+                │                     └────────────────────────────────────┘
+                │                                       │
+                └───────────────────────┬───────────────┘
+                                        ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  STEP 8: Rank Video Sequence                                                │
+│  └── Alternate: interview → voiceover → interview → voiceover               │
+│      Output: 8_ranked_sequence/ (001_interview.mp4, 002_voiceover.mp4...)   │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                        │
+                                        ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  STEP 9: Combine All Videos                                                 │
+│  └── Merge ranked sequence + background music                               │
+│      Output: 9_combined_videos/final_video.mp4                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                        │
+                                        ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  STEP 10: Upload to YouTube                                                 │
+│  └── Automatic upload (UNLISTED)                                            │
+│      Output: 10_youtube_uploads/upload_metadata.json                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                        │
+                                        ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  STEP 11: Thumbnail Generator (Bonus)                                       │
+│  └── AI generates viral thumbnail ideas                                     │
+│      Output: thumbnail_ideas.json, thumbnail_prompt.txt                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+                </pre>
+            </div>
+
+            <!-- Individual Step Details -->
+            <div class="step-card">
+                <div class="step-header">
+                    <span class="step-number">0</span>
+                    <span class="step-title">Copy Original Video</span>
+                </div>
+                <table>
+                    <tr><td><strong>Purpose</strong></td><td>Backup original video file</td></tr>
+                    <tr><td><strong>Input</strong></td><td>Raw video (MP4, MKV, AVI, MOV, WMV, FLV, WEBM)</td></tr>
+                    <tr><td><strong>Output</strong></td><td><code>0_original_video/</code></td></tr>
+                    <tr><td><strong>Duration</strong></td><td>Fast (simple file copy)</td></tr>
+                </table>
+            </div>
+
+            <div class="step-card">
+                <div class="step-header">
+                    <span class="step-number">1</span>
+                    <span class="step-title">Diarize & Cut Video</span>
+                </div>
+                <table>
+                    <tr><td><strong>Purpose</strong></td><td>Detect speakers and cut video into clips</td></tr>
+                    <tr><td><strong>Input</strong></td><td>Original video</td></tr>
+                    <tr><td><strong>Output</strong></td><td><code>1_clips/voiceover/</code> + <code>1_clips/interviews/</code></td></tr>
+                    <tr><td><strong>Technology</strong></td><td>pyannote.audio for speaker diarization</td></tr>
+                    <tr><td><strong>GPU</strong></td><td>CUDA acceleration supported</td></tr>
+                </table>
+                <h5>Key Settings:</h5>
+                <ul>
+                    <li><code>MIN_VOICEOVER_DURATION</code>: 2.0 seconds minimum</li>
+                    <li><code>VOICEOVER_MERGE_GAP</code>: 5.0 seconds merge threshold</li>
+                    <li><code>USE_GPU</code>: Enable CUDA acceleration</li>
+                </ul>
+            </div>
+
+            <div class="step-card">
+                <div class="step-header">
+                    <span class="step-number">2</span>
+                    <span class="step-title">Style Interview Clips</span>
+                </div>
+                <table>
+                    <tr><td><strong>Purpose</strong></td><td>Add visual effects, animations, and styling</td></tr>
+                    <tr><td><strong>Input</strong></td><td>Interview clips from Step 1</td></tr>
+                    <tr><td><strong>Output</strong></td><td><code>2_styled_clips/</code> (1920x1080, 30fps)</td></tr>
+                    <tr><td><strong>GPU</strong></td><td>NVENC encoding supported</td></tr>
+                </table>
+                <h5>Animation Types:</h5>
+                <ul>
+                    <li><code>slide</code> - Slide in from direction</li>
+                    <li><code>zoom</code> - Zoom in effect</li>
+                    <li><code>bounce</code> - Bouncy entrance</li>
+                    <li><code>blur_slide</code> - Blur + slide combination</li>
+                    <li><code>glitch</code> - Glitch effect</li>
+                </ul>
+            </div>
+
+            <div class="step-card">
+                <div class="step-header">
+                    <span class="step-number">3</span>
+                    <span class="step-title">Transcribe Clips</span>
+                </div>
+                <table>
+                    <tr><td><strong>Purpose</strong></td><td>Convert speech to text</td></tr>
+                    <tr><td><strong>Input</strong></td><td>Voiceover clips from Step 1</td></tr>
+                    <tr><td><strong>Output</strong></td><td><code>3_transcripts/raw_transcript.txt</code></td></tr>
+                    <tr><td><strong>Technology</strong></td><td>OpenAI Whisper / faster-whisper</td></tr>
+                    <tr><td><strong>GPU</strong></td><td>CUDA acceleration supported</td></tr>
+                </table>
+                <h5>Model Sizes:</h5>
+                <ul>
+                    <li><code>small</code> - Fast, lower accuracy</li>
+                    <li><code>medium</code> - Balanced (recommended)</li>
+                    <li><code>large</code> - High accuracy, slower</li>
+                </ul>
+            </div>
+
+            <div class="step-card">
+                <div class="step-header">
+                    <span class="step-number">4</span>
+                    <span class="step-title">AI Rewrite Script</span>
+                </div>
+                <table>
+                    <tr><td><strong>Purpose</strong></td><td>Transform transcript into viral, engaging script</td></tr>
+                    <tr><td><strong>Input</strong></td><td>Raw transcript from Step 3</td></tr>
+                    <tr><td><strong>Output</strong></td><td><code>4_ai_scripts/rewritten_script.txt</code></td></tr>
+                    <tr><td><strong>AI Providers</strong></td><td>Google Gemini, Anthropic Claude</td></tr>
+                </table>
+                <div class="alert alert-info">
+                    Each profile can have different prompt templates for different content styles!
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-header">
+                    <span class="step-number">5</span>
+                    <span class="step-title">Generate Voiceover</span>
+                </div>
+                <table>
+                    <tr><td><strong>Purpose</strong></td><td>Create AI narration from script</td></tr>
+                    <tr><td><strong>Input</strong></td><td>AI script from Step 4</td></tr>
+                    <tr><td><strong>Output</strong></td><td><code>5_voiceovers/*.mp3</code></td></tr>
+                    <tr><td><strong>Service</strong></td><td>Fish Audio TTS</td></tr>
+                </table>
+                <h5>Methods:</h5>
+                <ul>
+                    <li><strong>Browser Method</strong> - Uses your Fish Audio subscription via browser automation</li>
+                    <li><strong>API Method</strong> - Direct API calls (requires API key)</li>
+                </ul>
+            </div>
+
+            <div class="step-card">
+                <div class="step-header">
+                    <span class="step-number">6</span>
+                    <span class="step-title">Arrange B-Roll Clips</span>
+                </div>
+                <table>
+                    <tr><td><strong>Purpose</strong></td><td>Create 6-second B-roll clips for assembly</td></tr>
+                    <tr><td><strong>Input</strong></td><td>Interview clips OR custom B-roll folder</td></tr>
+                    <tr><td><strong>Output</strong></td><td><code>6_6sec_clips/</code></td></tr>
+                </table>
+                <h5>Options:</h5>
+                <ul>
+                    <li>Use interview clips as B-roll (default)</li>
+                    <li>Use custom B-roll from specified folder</li>
+                </ul>
+            </div>
+
+            <div class="step-card">
+                <div class="step-header">
+                    <span class="step-number">7</span>
+                    <span class="step-title">Assemble Final Video</span>
+                </div>
+                <table>
+                    <tr><td><strong>Purpose</strong></td><td>Combine voiceover + B-roll into complete video</td></tr>
+                    <tr><td><strong>Input</strong></td><td>Voiceover (Step 5) + B-roll (Step 6)</td></tr>
+                    <tr><td><strong>Output</strong></td><td><code>7_final_videos/</code></td></tr>
+                </table>
+                <h5>Features:</h5>
+                <ul>
+                    <li>Logo overlay (optional)</li>
+                    <li>Background music mixing</li>
+                    <li>Audio level balancing</li>
+                    <li>GPU-accelerated encoding</li>
+                </ul>
+            </div>
+
+            <div class="step-card">
+                <div class="step-header">
+                    <span class="step-number">8</span>
+                    <span class="step-title">Rank Video Sequence</span>
+                </div>
+                <table>
+                    <tr><td><strong>Purpose</strong></td><td>Alternate interview clips with voiceover videos</td></tr>
+                    <tr><td><strong>Input</strong></td><td>Styled clips (Step 2) + Final videos (Step 7)</td></tr>
+                    <tr><td><strong>Output</strong></td><td><code>8_ranked_sequence/</code></td></tr>
+                    <tr><td><strong>Pattern</strong></td><td>interview → voiceover → interview → voiceover...</td></tr>
+                </table>
+            </div>
+
+            <div class="step-card">
+                <div class="step-header">
+                    <span class="step-number">9</span>
+                    <span class="step-title">Combine Ranked Videos</span>
+                </div>
+                <table>
+                    <tr><td><strong>Purpose</strong></td><td>Merge all videos into ONE final video</td></tr>
+                    <tr><td><strong>Input</strong></td><td>Ranked sequence from Step 8</td></tr>
+                    <tr><td><strong>Output</strong></td><td><code>9_combined_videos/final_video.mp4</code></td></tr>
+                </table>
+                <h5>Features:</h5>
+                <ul>
+                    <li>Frame rate normalization</li>
+                    <li>Background music integration</li>
+                    <li>Audio level balancing</li>
+                </ul>
+            </div>
+
+            <div class="step-card">
+                <div class="step-header">
+                    <span class="step-number">10</span>
+                    <span class="step-title">YouTube Upload</span>
+                </div>
+                <table>
+                    <tr><td><strong>Purpose</strong></td><td>Upload final video to YouTube</td></tr>
+                    <tr><td><strong>Input</strong></td><td>Combined video from Step 9</td></tr>
+                    <tr><td><strong>Output</strong></td><td><code>10_youtube_uploads/</code> (metadata JSON)</td></tr>
+                    <tr><td><strong>Visibility</strong></td><td>UNLISTED (publish manually)</td></tr>
+                </table>
+                <div class="alert alert-warning">
+                    <strong>First Time:</strong> Browser will open for YouTube login. Cookies saved for future uploads.
+                </div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-header">
+                    <span class="step-number">11</span>
+                    <span class="step-title">Thumbnail Generator (Bonus)</span>
+                </div>
+                <table>
+                    <tr><td><strong>Purpose</strong></td><td>Generate viral thumbnail ideas using AI</td></tr>
+                    <tr><td><strong>Input</strong></td><td>AI script from Step 4</td></tr>
+                    <tr><td><strong>Output</strong></td><td><code>thumbnail_ideas.json</code>, <code>thumbnail_prompt.txt</code></td></tr>
+                </table>
+                <h5>Modes:</h5>
+                <ul>
+                    <li><code>script</code> - Generate from script content</li>
+                    <li><code>title</code> - Extract from thumbnail_TITLE.jpg filename</li>
+                    <li><code>off</code> - Disable thumbnail generation</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Profiles & Channels Section -->
+        <section id="profiles">
+            <h2>Profiles & Channels</h2>
+
+            <p>Profiles allow you to create multiple versions of the same video with different styles, voices, and target channels.</p>
+
+            <h3>Profile Configuration</h3>
+            <table>
+                <tr>
+                    <th>Setting</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td><code>name</code></td>
+                    <td>Display name for the profile</td>
+                </tr>
+                <tr>
+                    <td><code>suffix</code></td>
+                    <td>Short code used in folder names (e.g., BASKLY, FASTIQ)</td>
+                </tr>
+                <tr>
+                    <td><code>prompt_file</code></td>
+                    <td>AI prompt template for script rewriting</td>
+                </tr>
+                <tr>
+                    <td><code>default_voice</code></td>
+                    <td>Fish Audio voice model name</td>
+                </tr>
+                <tr>
+                    <td><code>background_video</code></td>
+                    <td>Background video for styling</td>
+                </tr>
+                <tr>
+                    <td><code>background_music</code></td>
+                    <td>Music file for final video</td>
+                </tr>
+                <tr>
+                    <td><code>youtube_channel</code></td>
+                    <td>Target YouTube channel name</td>
+                </tr>
+                <tr>
+                    <td><code>enable_upload</code></td>
+                    <td>Auto-upload to YouTube (true/false)</td>
+                </tr>
+                <tr>
+                    <td><code>upload_wait_minutes</code></td>
+                    <td>Minutes to wait for upload completion</td>
+                </tr>
+            </table>
+
+            <h3>Example Profile</h3>
+            <pre><code>{
+  "SPORTS": {
+    "name": "Sports Channel",
+    "description": "High-energy sports content",
+    "suffix": "SPORTS",
+    "prompt_file": "./prompts/sports_prompt.txt",
+    "default_voice": "energetic_male",
+    "background_video": "./backgrounds/sports_bg.mp4",
+    "background_music": "./music/upbeat.mp3",
+    "youtube_channel": "MySportsChannel",
+    "enable_upload": true,
+    "upload_wait_minutes": 5
+  }
+}</code></pre>
+
+            <h3>Multi-Channel Workflow</h3>
+            <ol>
+                <li>Create profiles for each channel (different prompts, voices, styles)</li>
+                <li>Run "Create Video" or "Recreate Video"</li>
+                <li>Select multiple profiles when asked</li>
+                <li>Software generates separate videos for each profile</li>
+                <li>Each video uploads to its own YouTube channel</li>
+            </ol>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings">
+            <h2>Settings Reference</h2>
+
+            <h3>API Keys (Settings > API Keys)</h3>
+            <table>
+                <tr>
+                    <th>Key</th>
+                    <th>Service</th>
+                    <th>Required</th>
+                </tr>
+                <tr>
+                    <td>Gemini API Key</td>
+                    <td>Google AI (script rewriting)</td>
+                    <td>Yes (or Claude)</td>
+                </tr>
+                <tr>
+                    <td>Claude API Key</td>
+                    <td>Anthropic AI (script rewriting)</td>
+                    <td>Optional</td>
+                </tr>
+                <tr>
+                    <td>Fish Audio API Key</td>
+                    <td>Voice generation (API method)</td>
+                    <td>Optional</td>
+                </tr>
+            </table>
+
+            <h3>Processing Settings</h3>
+            <table>
+                <tr>
+                    <th>Setting</th>
+                    <th>Description</th>
+                    <th>Default</th>
+                </tr>
+                <tr>
+                    <td>GPU Acceleration</td>
+                    <td>Use NVIDIA GPU for encoding</td>
+                    <td>Auto-detect</td>
+                </tr>
+                <tr>
+                    <td>Animation Type</td>
+                    <td>Clip entrance animation style</td>
+                    <td>slide</td>
+                </tr>
+                <tr>
+                    <td>Voice Level</td>
+                    <td>Voiceover audio volume</td>
+                    <td>1.2</td>
+                </tr>
+                <tr>
+                    <td>Music Level</td>
+                    <td>Background music volume</td>
+                    <td>0.15</td>
+                </tr>
+                <tr>
+                    <td>Thumbnail Mode</td>
+                    <td>off / title / script</td>
+                    <td>script</td>
+                </tr>
+            </table>
+
+            <h3>File Locations</h3>
+            <table>
+                <tr>
+                    <th>Folder</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td><code>%LOCALAPPDATA%\NabilVideoStudioPro\</code></td>
+                    <td>App data, config, browser profiles</td>
+                </tr>
+                <tr>
+                    <td><code>browser_profiles\</code></td>
+                    <td>Saved browser sessions (YouTube, Fish Audio)</td>
+                </tr>
+                <tr>
+                    <td><code>prompts\</code></td>
+                    <td>AI prompt templates</td>
+                </tr>
+                <tr>
+                    <td><code>backgrounds\</code></td>
+                    <td>Background videos for styling</td>
+                </tr>
+                <tr>
+                    <td><code>music\</code></td>
+                    <td>Background music files</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Troubleshooting Section -->
+        <section id="troubleshooting">
+            <h2>Troubleshooting</h2>
+
+            <div class="alert alert-danger">
+                <h4>Fish Audio Login Issues</h4>
+                <p><strong>Problem:</strong> Browser opens but not logged in</p>
+                <p><strong>Solution:</strong></p>
+                <ol>
+                    <li>Delete <code>browser_profiles</code> folder</li>
+                    <li>Run voiceover step again</li>
+                    <li>Login when browser opens</li>
+                    <li>Cookies will be saved for next time</li>
+                </ol>
+            </div>
+
+            <div class="alert alert-danger">
+                <h4>YouTube Upload Fails</h4>
+                <p><strong>Problem:</strong> Upload doesn't complete or browser closes</p>
+                <p><strong>Solution:</strong></p>
+                <ol>
+                    <li>Increase <code>upload_wait_minutes</code> in profile settings</li>
+                    <li>Check internet connection stability</li>
+                    <li>Make sure video file isn't corrupted</li>
+                </ol>
+            </div>
+
+            <div class="alert alert-danger">
+                <h4>GPU Encoding Errors</h4>
+                <p><strong>Problem:</strong> NVENC errors or encoding failures</p>
+                <p><strong>Solution:</strong></p>
+                <ol>
+                    <li>Update NVIDIA drivers</li>
+                    <li>Disable GPU encoding in settings (falls back to CPU)</li>
+                    <li>Check if another app is using GPU encoder</li>
+                </ol>
+            </div>
+
+            <div class="alert alert-danger">
+                <h4>Whisper Transcription Slow</h4>
+                <p><strong>Problem:</strong> Step 3 takes very long time</p>
+                <p><strong>Solution:</strong></p>
+                <ol>
+                    <li>Use smaller model (small instead of large)</li>
+                    <li>Enable GPU if available</li>
+                    <li>Use faster-whisper instead of standard whisper</li>
+                </ol>
+            </div>
+
+            <div class="alert alert-danger">
+                <h4>API Rate Limits</h4>
+                <p><strong>Problem:</strong> AI script generation fails with rate limit error</p>
+                <p><strong>Solution:</strong></p>
+                <ol>
+                    <li>Wait a few minutes and retry</li>
+                    <li>Switch to different AI provider (Gemini ↔ Claude)</li>
+                    <li>Check API quota in provider dashboard</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- External Links Section -->
+        <section id="links">
+            <h2>Useful Links</h2>
+
+            <div class="card-grid">
+                <div class="card">
+                    <h4>AI Services</h4>
+                    <a href="https://aistudio.google.com/apikey" target="_blank" class="external-link">Google AI Studio (Gemini)</a>
+                    <a href="https://console.anthropic.com/" target="_blank" class="external-link">Anthropic Console (Claude)</a>
+                </div>
+                <div class="card">
+                    <h4>Voice Generation</h4>
+                    <a href="https://fish.audio/" target="_blank" class="external-link">Fish Audio</a>
+                    <a href="https://fish.audio/pricing" target="_blank" class="external-link">Fish Audio Pricing</a>
+                </div>
+                <div class="card">
+                    <h4>YouTube</h4>
+                    <a href="https://studio.youtube.com/" target="_blank" class="external-link">YouTube Studio</a>
+                    <a href="https://www.youtube.com/upload" target="_blank" class="external-link">YouTube Upload</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>Nabil Video Studio Pro v1.3.8</p>
+            <p>Copyright &copy; 2025 Nabil Software. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>

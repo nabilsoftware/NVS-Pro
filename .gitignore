@@ -1,0 +1,35 @@
+# Build output
+pyarmor_dist/
+pyarmor_runtime_009860/
+installer_output/
+__pycache__/
+*.pyc
+
+# Embedded Python runtime (too large for git)
+python/
+
+# Binary files
+NVS_Pro.exe
+yt-dlp.exe
+node/
+
+# Assets (large binaries)
+assets/
+
+# PyArmor config/license
+.pyarmor/
+pyarmor-regcode-*.txt
+pyarmor-regfile-*.zip
+pyarmor.bug.log
+
+# Misc
+nul
+kk.jpg
+*.mp3
+
+# IDE/tools
+.claude/
+
+# Test files
+test_*.py
+main_ui_test.py

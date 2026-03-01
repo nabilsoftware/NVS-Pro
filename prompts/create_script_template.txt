@@ -1,0 +1,641 @@
+WNBA VIDEO SCRIPT GENERATOR - PROFESSIONAL SPORTS COMMENTARY V2
+=============================================================
+
+TARGET VIDEO LENGTH: {target_minutes} minutes
+INTERVIEW CLIPS: {min_interviews}-{max_interviews} clips
+CLIP DURATION: {min_clip_duration}-{max_clip_duration} seconds each
+
+CONTENT TYPE: WNBA Sports Commentary & Analysis
+Focus: League news, controversies, player dynamics, business decisions, media coverage, ratings analysis
+
+TRANSCRIPT/RESEARCH DATA:
+{transcript_text}
+
+📊 RESEARCH INTEGRATION STRATEGY:
+- Use CONCRETE FACTS and verified statistics from research
+- Incorporate RECENT DEVELOPMENTS and expert opinions  
+- Add BACKGROUND CONTEXT from credible sources
+- Ground claims in EVIDENCE - cite specific numbers, dates, names
+- Build arguments using DATA, not just opinion
+
+═══════════════════════════════════════════════════════════
+
+🚨 CRITICAL - VIDEO STRUCTURE FORMAT:
+
+✅ MANDATORY: Video MUST start with [INTERVIEW] clip first (NOT voiceover)
+✅ STRICT PATTERN: Interview → Voiceover → Interview → Voiceover → Interview...
+✅ Every section opens with interview, followed by voiceover explanation
+✅ First 15 seconds = Pure visual drama (no talking head explanations)
+
+═══════════════════════════════════════════════════════════
+
+🎯 AI SMART CONTENT SELECTION - QUALITY OVER QUANTITY
+
+YOU DECIDE: Analyze transcript and select ONLY the most compelling segments
+- Target: {min_interviews}-{max_interviews} clips (choose based on content quality)
+- Duration: {min_clip_duration}-{max_clip_duration} seconds per clip
+- Selection Criteria: Each clip must deliver IMMEDIATE VALUE
+
+INTERVIEW CLIP SELECTION BY VIDEO SECTION:
+
+🎬 OPENING CLIPS (0-2 MIN) - VISUAL DRAMA REQUIRED:
+  ✓ Body language, facial expressions, visible tension/emotion
+  ✓ Clips that work with MUTED AUDIO (assume mobile viewers)
+  ✓ Controversial or shocking moments that create curiosity
+  ✓ Awkward pauses, reactions, or uncomfortable interactions
+  ✓ High energy - excitement, anger, passion, surprise
+  ✗ REJECT: Boring talking heads, complete explanations, low energy
+
+🎬 BUILD CLIPS (2-5 MIN) - CONTEXT & PERSPECTIVE:
+  ✓ Expert analysis providing background information
+  ✓ Multiple perspectives on the same event
+  ✓ Specific examples with names, dates, incidents
+  ✓ Insider information or behind-the-scenes details
+  ✗ REJECT: Vague statements, repetitive info, filler content
+
+🎬 REVELATION CLIPS (5-7 MIN) - EVIDENCE & PROOF:
+  ✓ Smoking gun moments or key revelations
+  ✓ Detailed breakdowns (longer clips OK here - viewers invested)
+  ✓ Insider testimony or exclusive information
+  ✓ Statistical evidence or concrete proof
+  ✗ REJECT: Opinions without backing, speculative claims
+
+🎬 CONCLUSION CLIPS (7+ MIN) - SYNTHESIS & IMPACT:
+  ✓ Final perspectives or thought-provoking statements
+  ✓ Future implications and predictions
+  ✓ Callback moments that close the loop
+  ✓ Strong closing quotes that reinforce your argument
+  ✗ REJECT: New confusing info, unrelated tangents
+
+UNIVERSAL REJECTION CRITERIA - Skip clips that:
+✗ Repeat information already covered in previous clips
+✗ Contain vague generalizations without specifics
+✗ Lack concrete evidence or examples
+✗ Feel like filler or padding
+✗ Don't advance the story or add new perspective
+
+═══════════════════════════════════════════════════════════
+
+🚨 RETENTION-OPTIMIZED PACING STRATEGY (CRITICAL FOR HIGH AVD)
+
+This pacing structure is MANDATORY for maximum viewer retention:
+
+📍 MINUTES 0-3 (HOOK PHASE) - RAPID FIRE:
+Voiceovers: 15-25 seconds MAX (40-65 words)
+Interview clips: 15-25 seconds each
+Strategy: Alternate RAPIDLY - change visual/audio every 15-25 seconds
+Clip count: Use 3-4 interview clips in this section
+Goal: "This is moving fast, I can't leave yet"
+Style: Machine gun fire - quick cuts, high energy
+
+📍 MINUTES 3-6 (BUILD PHASE) - MEDIUM PACE:
+Voiceovers: 25-35 seconds (65-90 words)
+Interview clips: 20-35 seconds each
+Strategy: Maintain momentum while building complexity
+Clip count: Use 2-3 interview clips in this section
+Goal: "I'm learning the story, need to see where this goes"
+Style: Controlled pace - not rushed, not slow
+
+📍 MINUTES 6-8 (REVELATION PHASE) - DEEPER DIVE:
+Voiceovers: 35-50 seconds (90-130 words)
+Interview clips: 30-45 seconds each
+Strategy: Can go deeper - viewers are invested now
+Clip count: Use 2-3 interview clips in this section
+Goal: "This is paying off, glad I stayed"
+Style: Substantive but engaging
+
+📍 FINAL PHASE (Last 20% of video) - SATISFYING DEPTH:
+
+🎯 CONCLUSION LENGTH SCALES WITH VIDEO LENGTH:
+
+For 8-10 minute videos:
+   - Final voiceover: 60-90 seconds (150-225 words)
+   
+For 11-15 minute videos:
+   - Final voiceover: 90-150 seconds (225-375 words)
+   - Can include comprehensive breakdown
+   
+For 16-20 minute videos:
+   - Final voiceover: 150-240+ seconds (375-1200+ words)
+   - VERY LONG conclusions encouraged (6000-8000 characters OK)
+   - Deep analysis, multiple perspectives, complete synthesis
+   
+For 20+ minute videos:
+   - Final voiceover: 180-300+ seconds (450-1500+ words)
+   - MAXIMUM DEPTH - as long as needed
+   - Complete comprehensive analysis with all angles covered
+   
+Interview clips: 35-50 seconds each (longest clips go here)
+Strategy: Reward committed viewers with depth proportional to their time investment
+Clip count: Use 1-3 final interview clips (more for longer videos)
+Goal: "That was worth my time, let me comment"
+Style: Comprehensive analysis - the longer the video, the deeper you go
+
+✅ CRITICAL RULE: Viewers who stayed {target_minutes} minutes are INVESTED
+✅ They deserve complete, thorough, in-depth analysis
+✅ Don't hold back - give them everything in the final voiceover
+✅ For videos 15+ minutes: Final voiceover should be LONGEST section
+
+🎯 PACING VISUALIZATION:
+
+For ALL video lengths:
+Early video (0-3 min) = Machine gun fire (bang bang bang) - SHORT SEGMENTS
+Mid video (3-6 min) = Steady drumbeat (consistent rhythm) - MEDIUM SEGMENTS
+
+For 8-10 minute videos:
+Late video (6-8 min) = Building crescendo (increasing depth) - DEEPER SEGMENTS
+End video (8-10 min) = Satisfying resolution (good payoff) - SUBSTANTIAL CONCLUSION
+
+For 11-15 minute videos:
+Late video (6-11 min) = Building crescendo (increasing depth) - DEEPER SEGMENTS
+End video (11-15 min) = Extended analysis (comprehensive) - LONG CONCLUSION
+
+For 16-20+ minute videos:
+Late video (6-16 min) = Progressive deepening (layered analysis) - DEEP SEGMENTS
+End video (16-20+ min) = MAXIMUM DEPTH (complete synthesis) - VERY LONG CONCLUSION
+
+📏 SCALING RULE: Total video length = How deep the final voiceover can go
+   - 8 min video → 90 sec final VO
+   - 11 min video → 150 sec final VO
+   - 19 min video → 240+ sec final VO (6000-8000 characters)
+
+═══════════════════════════════════════════════════════════
+
+🚨 CRITICAL - ANTI-REPETITION ENFORCEMENT
+
+This is a HARD RULE. Violations will result in script rejection.
+
+NEVER REPEAT RULE:
+❌ Once a fact is stated, NEVER restate it verbatim in another voiceover
+❌ Do not mention the same event/quote/statistic multiple times
+❌ Each voiceover must reveal NEW information or a NEW angle
+❌ If you're tempted to repeat something, ask: "What's the next layer deeper?"
+
+ALLOWED REFERENCES:
+✅ "As we saw earlier..." (brief callback, then NEW insight)
+✅ "Remember that detail? Here's why it matters..." (connects to new info)
+✅ "This connects back to..." (shows relationship, doesn't repeat)
+
+ENFORCEMENT CHECKLIST:
+Before finalizing script, scan ALL voiceovers for:
+☐ Same phrases appearing twice
+☐ Same examples used multiple times
+☐ Same arguments restated differently
+☐ Circular logic or repetitive structure
+
+If ANY repetition found → REWRITE that section with fresh content
+
+═══════════════════════════════════════════════════════════
+
+🎬 WNBA COMMENTARY VIDEO STRUCTURE ({target_minutes} MINUTE TARGET)
+
+ACT 1: EXPLOSIVE HOOK (0:00-0:45)
+Purpose: Stop the scroll, create immediate intrigue
+
+STRUCTURE:
+[INTERVIEW: Most dramatic visual clip - 15-25 seconds]
+↓
+[VOICEOVER: Explain what we just saw + preview controversy - 15-25 seconds]
+
+Opening Clip Requirements:
+- Must show VISUAL DRAMA (body language, tension, reactions)
+- Must work with MUTED AUDIO (mobile viewers)
+- Must create question: "What's happening here?"
+- Must be your STRONGEST clip (you get 3 seconds to hook them)
+
+Opening Voiceover Requirements:
+- Start mid-action: "Body language doesn't lie. What we just witnessed..."
+- Preview the controversy without spoiling it
+- Create intrigue: "So what happened between them?"
+- NO generic intros like "Today we're talking about..."
+
+Example Opening:
+❌ BAD: "Today we're discussing WNBA media relationships..."
+✅ GOOD: "That reaction right there? That's not surprise. That's recognition followed by disgust. And the story behind it reveals a divide that's tearing apart the league's biggest fanbase."
+
+ACT 2: BUILD THE CASE (0:45-5:00)
+Purpose: Provide context, establish credibility, maintain momentum
+
+STRUCTURE:
+[INTERVIEW: Contrast clip or context - 20-30 seconds]
+↓
+[VOICEOVER: Analyze the contrast, introduce background - 25-35 seconds]
+↓
+[INTERVIEW: Expert perspective or additional evidence - 25-35 seconds]
+↓
+[VOICEOVER: Connect dots, build toward revelation - 25-35 seconds]
+↓
+[Continue pattern...]
+
+Strategy:
+- Show contrasting perspectives (Interview A vs Interview B)
+- Layer in background: timeline, key players, past events
+- Plant retention hooks: "Remember this detail - it becomes crucial later..."
+- Build complexity without losing momentum
+- Use 2-4 interview clips total in this section
+
+ACT 3: DEEP DIVE REVELATION (5:00-8:00)
+Purpose: Deliver on the hook's promise, provide satisfying insights
+
+STRUCTURE:
+[INTERVIEW: Key evidence or smoking gun moment - 30-45 seconds]
+↓
+[VOICEOVER: Unpack significance, explain implications - 35-50 seconds]
+↓
+[INTERVIEW: Reaction or additional confirmation - 30-40 seconds]
+↓
+[VOICEOVER: Connect to bigger picture - 40-50 seconds]
+
+Strategy:
+- Present your evidence systematically
+- Explain WHY this matters (not just WHAT happened)
+- Address potential counterarguments briefly
+- Create "aha moments" for viewers
+- Use 2-3 interview clips total in this section
+- This is where depth is rewarded - invested viewers want details
+
+ACT 4: POWERFUL CONCLUSION (8:00-END)
+Purpose: Satisfy viewers, drive engagement, encourage comments
+
+STRUCTURE:
+[INTERVIEW: Final perspective or synthesis - 35-50 seconds]
+↓
+[VOICEOVER: Summary + thought-provoking question + CTA - 50-70 seconds]
+
+Conclusion Requirements:
+- Synthesize key revelation clearly
+- Explain broader implications
+- End with SPECIFIC controversial question (forces viewers to pick a side)
+- Natural call-to-action (like, subscribe, comment)
+- Optional: Brief tease for next video topic
+
+ENDING STYLE OPTIONS (Pick ONE):
+
+Style 1 - Force a Choice:
+"So who's right here - the reporter trying to break news, or the team protecting their strategy? You can't say both. Pick a side in the comments."
+
+Style 2 - Provocative Challenge:
+"If you were Caitlin Clark, would you EVER give that reporter a real interview again? Because I wouldn't. Tell me I'm wrong in the comments."
+
+Style 3 - Predict Consequences:
+"Mark my words: this relationship is done. She'll never trust him again. And that's going to change how the Fever handle media access moving forward. What do you think happens next?"
+
+═══════════════════════════════════════════════════════════
+
+✍️ PROFESSIONAL WNBA COMMENTARY WRITING STYLE
+
+VOICE & TONE:
+✅ Conversational but credible - like a knowledgeable friend
+✅ Confident in analysis, backed by facts
+✅ Skeptical of official narratives when evidence warrants
+✅ Fair to all parties while maintaining clear perspective
+✅ Engaging without being sensationalist
+✅ Natural speech patterns: contractions, rhetorical questions, direct address
+
+LANGUAGE GUIDELINES:
+
+DO USE:
+✓ Specific names: players, coaches, executives, journalists
+✓ Concrete numbers: ratings, salaries, attendance, percentages, dates
+✓ Precise timelines: "last Thursday," "in July 2024," "after Game 3"
+✓ Direct quotes from interviews (when referencing clips)
+✓ WNBA terminology: CBA, revenue sharing, expansion draft
+✓ Comparative analysis: "compared to last season," "unlike the NBA"
+✓ Rhetorical questions for engagement
+✓ Active voice and strong verbs
+
+🚨 MANDATORY SPECIFICS RULE:
+When mentioning these topics, you MUST include specific details:
+- Injuries → Name the injury type ("ankle sprain" not just "injury")
+- Dates → Include month/year ("July 2024" not just "this summer")
+- Controversies → Specific incident ("called fans 'the dark side'" not "said something controversial")
+- Statistics → Actual numbers ("3.2 million viewers" not "record ratings")
+- Quotes → Attribute to specific person with context
+
+Generic references without specifics = AUTOMATIC REJECTION
+
+AVOID OVERUSED PHRASES (Max 1 use per entire script):
+❌ "here's the thing" / "get this" / "listen up" / "now here's what's wild"
+❌ "and honestly" / "let's be real" / "okay, so" / "but here's where it gets crazy"
+❌ "at the end of the day" / "to be fair" / "the fact of the matter is"
+❌ "make no mistake" / "needless to say" / "believe it or not"
+❌ "let's dive in" / "let's unpack" / "without further ado"
+
+NEVER USE:
+❌ All-caps words in script (SHOCKING, EXPOSED, PANIC)
+❌ Multiple exclamation marks
+❌ Vague references: "some people," "they say," "sources claim" (name them or skip it)
+❌ Filler phrases: "you know," "I mean," "basically," "literally" (unless for specific emphasis)
+❌ Clickbait language: "you won't believe," "doctors hate this," "one weird trick"
+
+═══════════════════════════════════════════════════════════
+
+🔗 STRATEGIC TRANSITION TECHNIQUES
+
+Each segment must flow seamlessly. Use these proven patterns:
+
+INTERVIEW → VOICEOVER TRANSITIONS:
+
+Pattern 1: EXPLAIN WHAT WE JUST SAW
+Interview: [Awkward moment or reaction]
+Voiceover: "That reaction tells you everything. Here's what's really happening..."
+
+Pattern 2: REVEAL THE CONTEXT
+Interview: [Bold statement or claim]
+Voiceover: "Now here's what he's not telling you. Three weeks before that interview..."
+
+Pattern 3: CONTRAST SETUP
+Interview: [Person A's perspective]
+Voiceover: "That's the official story. But watch what happens when someone else addresses the same question..."
+
+Pattern 4: BUILD ANTICIPATION  
+Interview: [Partial information or setup]
+Voiceover: "Remember that detail - because in two minutes, we're going to see exactly why it matters..."
+
+Pattern 5: CONNECT THE DOTS
+Interview: [Evidence or example]
+Voiceover: "And that's not an isolated incident. This pattern has been building for months..."
+
+VOICEOVER → INTERVIEW TRANSITIONS:
+
+Pattern 1: SETUP THE CLIP
+Voiceover: "Now watch carefully. Pay attention to her body language here..."
+Interview: [Clip showing the described behavior]
+
+Pattern 2: INTRODUCE PERSPECTIVE
+Voiceover: "So I reached out to someone who's been covering this team for five years. Here's what she told me..."
+Interview: [Expert analysis]
+
+Pattern 3: SHOW THE PROOF
+Voiceover: "Don't take my word for it. Here's the actual moment it happened..."
+Interview: [Evidence clip]
+
+Pattern 4: CREATE CONTRAST
+Voiceover: "But that's not how she acts with everyone. Check out this interaction from the same event..."
+Interview: [Contrasting behavior]
+
+RETENTION HOOKS (Place 3-4 throughout video):
+At 2:00 mark: "But that's just the surface. What happens next is what really matters..."
+At 4:30 mark: "Now here's the part everyone's been missing..."
+At 6:30 mark: "And this is where it gets personal..."
+Before final act: "Because here's what this means for the future..."
+
+═══════════════════════════════════════════════════════════
+
+📤 REQUIRED OUTPUT FORMAT - STRICT COMPLIANCE MANDATORY
+
+YOU MUST use this EXACT format - no variations allowed:
+
+[INTERVIEW: exact_video_filename.mp4, 00:01:23-00:01:45]
+
+[VOICEOVER]
+Your professional, conversational narration here. Write in natural 
+speaking voice. Make it engaging and evidence-based.
+
+[INTERVIEW: exact_video_filename.mp4, 00:03:12-00:03:35]
+
+[VOICEOVER]
+Continue the story. Analyze what viewers just heard. Build momentum
+toward the next revelation.
+
+(Continue alternating [INTERVIEW] → [VOICEOVER] pattern...)
+
+CRITICAL FORMATTING RULES:
+✅ First segment MUST be [INTERVIEW] (video starts with clip, NOT voiceover)
+✅ Interview marker: [INTERVIEW: filename.mp4, MM:SS-MM:SS] or [HH:MM:SS-HH:MM:SS]
+✅ Use EXACT filename from transcript
+✅ Voiceover marker: [VOICEOVER] on its own line
+✅ Voiceover text starts on next line after marker
+✅ Minimum {min_interviews} interview clips required
+✅ Each interview clip: {min_clip_duration}-{max_clip_duration} seconds
+
+🚨 CRITICAL - VOICEOVER CONTENT RULES:
+❌ DO NOT include production notes, metadata, or formatting instructions
+❌ DO NOT include ## headers, --- dividers, or ** bold markers  
+❌ DO NOT include duration estimates, word counts, or character counts
+❌ DO NOT include retention hook labels like (Opening Hook) or (Mid-video)
+❌ DO NOT include checklists, bullet points, or technical notes
+❌ DO NOT add annotations like (Opening), (Act 2), (Before climax)
+❌ DO NOT add ANY line that starts with a dash (-) or number (1., 2., 3.)
+❌ DO NOT add ANYTHING after the final voiceover narration ends
+❌ NO explanations, NO summaries, NO "NARRATIVE ARC" descriptions
+❌ The script ends when the last narration sentence ends - NOTHING after that
+❌ DO NOT create new [VOICEOVER] marker for each paragraph - combine them!
+✅ ONLY write the actual narration text that will be spoken by the voice actor
+✅ Write in natural sentences and paragraphs, nothing else
+✅ Every word in [VOICEOVER] sections must be speakable narration
+✅ If a TTS voice actor cannot speak it out loud, DO NOT include it
+✅ Multiple paragraphs can exist in ONE [VOICEOVER] section (use blank lines between them)
+✅ Final voiceover should contain 8-15 paragraphs in ONE [VOICEOVER] section
+
+🚨 CRITICAL - SEGMENT BALANCE RULE:
+❌ DO NOT create more voiceover sections than interview clips
+✅ Number of voiceovers = Number of interviews (exactly equal or +1 maximum)
+✅ STRICT ALTERNATING PATTERN: Interview → Voiceover → Interview → Voiceover
+✅ If you select 5 interview clips, create 5-6 voiceover sections MAX
+✅ If you select 8 interview clips, create 8-9 voiceover sections MAX
+✅ Make voiceovers LONGER and DEEPER, not MORE numerous
+✅ Quality over quantity - substantial voiceovers beat numerous short ones
+
+🚨🚨🚨 CRITICAL - MULTIPLE PARAGRAPHS IN ONE VOICEOVER SECTION 🚨🚨🚨
+
+Each [VOICEOVER] section CAN and SHOULD contain MULTIPLE PARAGRAPHS.
+DO NOT create a new [VOICEOVER] marker for each paragraph!
+
+✅ CORRECT FORMAT - Multiple paragraphs in ONE voiceover:
+[VOICEOVER]
+First paragraph with analysis and context goes here. This introduces 
+the main point and sets up the discussion.
+
+Second paragraph builds on the first with more details and examples. 
+This adds depth to the analysis.
+
+Third paragraph goes even deeper with comprehensive breakdown and 
+multiple perspectives on the topic.
+
+Fourth paragraph synthesizes everything and leads to the next point.
+
+[This is ONE [VOICEOVER] section containing 4 paragraphs]
+
+❌ WRONG FORMAT - New marker for each paragraph:
+[VOICEOVER]
+First paragraph about the topic.
+
+[VOICEOVER]
+Second paragraph building on first.
+
+[VOICEOVER]
+Third paragraph going deeper.
+
+[VOICEOVER]
+Fourth paragraph synthesizing.
+
+[This creates 4 separate voiceover sections - WRONG!]
+
+📏 FINAL VOICEOVER SPECIAL RULE:
+For videos 12+ minutes, the FINAL [VOICEOVER] section MUST contain:
+✅ 8-15 paragraphs combined into ONE [VOICEOVER] section
+✅ 6000-8000+ characters total in that ONE section
+✅ Blank lines between paragraphs (within the same [VOICEOVER]) are OK
+✅ Comprehensive synthesis of all points
+✅ Multiple perspectives and angles
+✅ Complete analysis with strong CTA at the end
+
+The final [VOICEOVER] should be your LONGEST section with the MOST paragraphs inside it.
+
+EXAMPLE OF CORRECT FINAL VOICEOVER:
+[INTERVIEW: final_clip.mp4, 10:30-10:55]
+
+[VOICEOVER]
+Here's what makes this significant. [Paragraph 1 - about 100 words]
+
+First incident: the dark side comment. [Paragraph 2 - about 120 words]
+
+But that wasn't the biggest issue. [Paragraph 3 - about 150 words]
+
+Think about the position this puts Caitlin in. [Paragraph 4 - about 130 words]
+
+And here's the thing about beat reporters. [Paragraph 5 - about 140 words]
+
+Watch that initial interaction again. [Paragraph 6 - about 120 words]
+
+Now compare that to how she treats other reporters. [Paragraph 7 - about 135 words]
+
+The contrast reveals something important. [Paragraph 8 - about 125 words]
+
+Scott Agness had to know this was coming. [Paragraph 9 - about 140 words]
+
+What makes this particularly awkward. [Paragraph 10 - about 130 words]
+
+This dynamic is going to continue. [Paragraph 11 - about 125 words]
+
+So the question becomes: was breaking those stories worth it? [Paragraph 12 - about 150 words with final CTA]
+
+[This is ONE [VOICEOVER] section with 12 paragraphs = 6500+ characters]
+
+EXAMPLE OUTPUT:
+
+[INTERVIEW: Caitlin Clark BECOMES VISIBLY SICK.mp4, 00:02:15-00:02:38]
+
+[VOICEOVER]
+Body language doesn't lie. And what we just witnessed is one of the most uncomfortable 
+moments in WNBA media this season. That's not surprise on her face - that's recognition 
+followed immediately by disgust. So what happened between them?
+
+[INTERVIEW: Caitlin Clark BECOMES VISIBLY SICK.mp4, 00:03:27-00:04:05]
+
+[VOICEOVER]
+Now watch this. Same press conference, different reporter. Suddenly it's like a completely 
+different person showed up. Eye contact, genuine smile, detailed answers about her family. 
+The contrast is jarring. So we need to ask the obvious question: what did that first 
+reporter do to earn this kind of reception?
+
+═══════════════════════════════════════════════════════════
+
+🎯 FINAL QUALITY CHECKLIST
+
+Before finalizing script, verify EVERY item:
+
+CONTENT QUALITY:
+☐ Every interview clip adds unique value (no redundancy)
+☐ No repetitive information across voiceovers
+☐ All arguments supported by specific evidence (names, dates, numbers)
+☐ Every claim can be verified from transcript/research
+☐ Controversial points presented with evidence, not just opinion
+☐ Mandatory specifics included (injury names, dates, exact quotes)
+
+SCRIPT QUALITY:
+☐ Voiceovers sound natural when read aloud (test by speaking them)
+☐ No overused phrases appear multiple times
+☐ Transitions flow smoothly between segments
+☐ Pacing varies appropriately (fast early, deeper later)
+☐ No jargon without explanation
+☐ Consistent tone throughout
+☐ Active voice dominates (avoid passive constructions)
+
+STRUCTURE QUALITY:
+☐ First segment is [INTERVIEW] not [VOICEOVER]
+☐ Hook delivers on its promise by end of video
+☐ Story builds logically with clear progression
+☐ Climax provides satisfying revelation
+☐ Conclusion synthesizes key points without repetition
+☐ Total length hits {target_minutes} minute target (±30 seconds)
+☐ 3-4 retention hooks placed at strategic moments
+☐ Follows pacing guidelines (short early, deeper later)
+
+TECHNICAL QUALITY:
+☐ Alternating pattern maintained (Interview → VO → Interview → VO)
+☐ Equal or nearly equal number of interviews and voiceovers
+☐ All timestamps are accurate and within video duration
+☐ Filenames exactly match transcript sources
+☐ No production notes or metadata in voiceover sections
+☐ Script ends cleanly (no summaries or annotations after final VO)
+
+RETENTION OPTIMIZATION:
+☐ First 3 minutes = rapid fire (15-25 sec segments)
+☐ Minutes 3-6 = medium pace (25-35 sec segments)
+☐ Minutes 6-8 = deeper content (35-50 sec segments)
+☐ Minutes 8+ = satisfying depth (45-70 sec segments)
+☐ Opening interview clip has strong visual drama
+☐ No repetition of facts across sections
+
+═══════════════════════════════════════════════════════════
+
+🚀 EXECUTION INSTRUCTIONS
+
+1. ANALYZE the transcript thoroughly
+   - Identify the core story/controversy
+   - Extract the most visually compelling moments for opening
+   - Note specific facts, numbers, names, dates (mandatory)
+   - Find contrasting perspectives
+   - Map which clips belong in which Act
+
+2. SELECT interview segments strategically
+   - Opening = most dramatic visual moment
+   - Early acts = context and contrast
+   - Mid acts = evidence and revelation
+   - Final acts = synthesis and implications
+   - Verify segments work out of context
+   - Ensure natural stopping/starting points
+
+3. CRAFT voiceover scripts
+   - Write in natural speaking voice (read aloud to test)
+   - Use active voice and strong verbs
+   - Include mandatory specifics (injury names, dates, exact details)
+   - Build arguments systematically with evidence
+   - Follow pacing guidelines (short early, deeper later)
+   - Connect each segment seamlessly to the next
+   - NEVER repeat information from previous voiceovers
+
+4. STRUCTURE the complete video
+   - MUST start with [INTERVIEW] clip
+   - Arrange segments for maximum impact
+   - Front-load visual drama, save depth for later
+   - Vary pacing according to retention strategy
+   - Plant retention hooks at key drop-off points (2:00, 4:30, 6:30)
+   - Ensure satisfying payoff at the end
+
+5. POLISH for quality
+   - Remove any repetitive phrasing across all voiceovers
+   - Tighten verbose sections
+   - Verify all facts mentioned (especially mandatory specifics)
+   - Check that tone remains consistent
+   - Confirm pacing follows retention guidelines
+   - Ensure no production notes in voiceover sections
+
+═══════════════════════════════════════════════════════════
+
+CREATE A PROFESSIONAL WNBA COMMENTARY VIDEO SCRIPT THAT:
+- Opens with immediate visual drama (interview first)
+- Engages viewers from the first second
+- Delivers substantive analysis backed by specific evidence
+- Maintains credibility while being entertaining
+- Flows seamlessly from start to finish with zero repetition
+- Follows retention-optimized pacing (fast early, deeper later)
+- Leaves viewers informed, satisfied, and eager to comment
+
+Your output will be used to create a complete video, so every detail matters.
+Quality over quantity. Insight over sensationalism. Evidence over opinion.
+Specific details over generic statements. Visual drama over talking heads.
+
+BEGIN SCRIPT GENERATION.
