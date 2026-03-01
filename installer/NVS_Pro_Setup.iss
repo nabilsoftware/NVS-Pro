@@ -10,7 +10,7 @@
 ; ============================================================================
 
 #define MyAppName "Nabil Video Studio Pro"
-#define MyAppVersion "1.6.8"
+#define MyAppVersion "1.6.9"
 #define MyAppPublisher "Nabil Software"
 #define MyAppURL "https://nabilsoftware.com"
 #define MyAppExeName "NVS_Pro.exe"
@@ -59,7 +59,7 @@ DisableDirPage=no
 ; Close applications using files during install (for updates)
 CloseApplications=force
 CloseApplicationsFilter=*.exe,*.dll,*.py,*.pyd
-RestartApplications=yes
+RestartApplications=no
 
 ; Wait for app to close before starting file operations
 SetupMutex=NabilVideoStudioProSetup

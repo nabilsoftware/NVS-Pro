@@ -160,10 +160,12 @@ def install_update(installer_path, cleanup_callback=None):
     """
     Launch the downloaded installer and exit the app.
 
-    Uses a PowerShell script (runs completely hidden via wscript) that:
-    1. Waits for the app to fully exit
-    2. Runs the installer silently
-    3. Relaunches the app after install completes
+    Architecture:
+    - NVS_Pro.exe (launcher) runs pythonw.exe ui_modern.py via subprocess.call (waits)
+    - os._exit(0) kills pythonw.exe → NVS_Pro.exe also exits shortly after
+    - We need to wait for BOTH processes to fully die before running the installer
+    - If files are still locked, Inno Setup queues replacements for reboot (bad!)
+    - Solution: PowerShell script force-kills both, verifies files are unlocked, then installs
     """
     try:
         # Call cleanup callback if provided (e.g., close all windows)
@@ -180,12 +182,12 @@ def install_update(installer_path, cleanup_callback=None):
             app_dir = os.path.dirname(os.path.abspath(__file__))
         app_exe = os.path.join(app_dir, "NVS_Pro.exe")
 
-        # Escape backslashes for embedding in VBScript strings
-        installer_esc = installer_path.replace("\\", "\\\\")
-        app_exe_esc = app_exe.replace("\\", "\\\\")
+        # Escape backslashes for PowerShell string embedding
+        installer_ps = installer_path.replace("'", "''")
+        app_exe_ps = app_exe.replace("'", "''")
+        app_dir_ps = app_dir.replace("'", "''")
 
-        # Write a PowerShell script that handles the entire update process
-        # PowerShell runs hidden (no window) and is much more reliable than VBScript
+        # PowerShell script that handles the entire update process
         ps_path = os.path.join(tempfile.gettempdir(), "nvs_update.ps1")
         ps_content = f'''# NVS Pro Auto-Update Script
 $ErrorActionPreference = "SilentlyContinue"
@@ -194,38 +196,71 @@ $ErrorActionPreference = "SilentlyContinue"
 $logFile = Join-Path $env:TEMP "nvs_update_log.txt"
 "[$(Get-Date)] Update script started" | Out-File $logFile
 
-# Wait for NVS_Pro.exe to fully exit (up to 30 seconds)
+# Step 1: Force-kill ALL app processes immediately
+"[$(Get-Date)] Killing app processes..." | Out-File $logFile -Append
+Stop-Process -Name "NVS_Pro" -Force -ErrorAction SilentlyContinue
+Stop-Process -Name "pythonw" -Force -ErrorAction SilentlyContinue
+Start-Sleep -Seconds 2
+
+# Step 2: Wait until NVS_Pro.exe and pythonw.exe are completely gone (up to 30 sec)
 $waited = 0
 while ($waited -lt 30) {{
-    $proc = Get-Process -Name "NVS_Pro" -ErrorAction SilentlyContinue
-    if (-not $proc) {{ break }}
+    $nvs = Get-Process -Name "NVS_Pro" -ErrorAction SilentlyContinue
+    $pyw = Get-Process -Name "pythonw" -ErrorAction SilentlyContinue
+    if ((-not $nvs) -and (-not $pyw)) {{ break }}
+
+    # Keep trying to kill them
+    if ($nvs) {{ Stop-Process -Name "NVS_Pro" -Force -ErrorAction SilentlyContinue }}
+    if ($pyw) {{ Stop-Process -Name "pythonw" -Force -ErrorAction SilentlyContinue }}
+
     Start-Sleep -Seconds 2
     $waited += 2
 }}
-"[$(Get-Date)] Wait done ($waited sec)" | Out-File $logFile -Append
+"[$(Get-Date)] Processes gone after $waited sec" | Out-File $logFile -Append
 
-# Force kill if still running
-if ($waited -ge 30) {{
-    Stop-Process -Name "NVS_Pro" -Force -ErrorAction SilentlyContinue
-    Stop-Process -Name "pythonw" -Force -ErrorAction SilentlyContinue
-    Start-Sleep -Seconds 2
+# Step 3: Wait for file locks to release — test by opening a key file
+$appDir = '{app_dir_ps}'
+$testFile = Join-Path $appDir "ui_modern.py"
+$unlocked = $false
+for ($i = 0; $i -lt 15; $i++) {{
+    try {{
+        if (Test-Path $testFile) {{
+            $stream = [System.IO.File]::Open($testFile, 'Open', 'ReadWrite', 'None')
+            $stream.Close()
+            $stream.Dispose()
+            $unlocked = $true
+            break
+        }} else {{
+            $unlocked = $true
+            break
+        }}
+    }} catch {{
+        Start-Sleep -Seconds 1
+    }}
 }}
+"[$(Get-Date)] File unlock check: unlocked=$unlocked" | Out-File $logFile -Append
 
-# Extra wait for file handles to release
-Start-Sleep -Seconds 2
-
-# Run the installer silently and wait for it to finish
-$installerPath = "{installer_esc}"
+# Step 4: Run the installer silently and wait for it to finish
+$installerPath = '{installer_ps}'
 "[$(Get-Date)] Running installer: $installerPath" | Out-File $logFile -Append
 
-$proc = Start-Process -FilePath $installerPath -ArgumentList "/VERYSILENT /CLOSEAPPLICATIONS /SP-" -Wait -PassThru -WindowStyle Hidden
+$proc = Start-Process -FilePath $installerPath -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /CLOSEAPPLICATIONS /SP- /NORESTARTAPPLICATIONS" -Wait -PassThru -WindowStyle Hidden
 "[$(Get-Date)] Installer exit code: $($proc.ExitCode)" | Out-File $logFile -Append
 
-# Wait for installer to fully finish (file operations may continue briefly)
-Start-Sleep -Seconds 3
+# Step 5: Verify the update was applied by checking if version.py was modified recently
+Start-Sleep -Seconds 2
+$versionFile = Join-Path $appDir "version.py"
+if (Test-Path $versionFile) {{
+    $lastWrite = (Get-Item $versionFile).LastWriteTime
+    $age = (Get-Date) - $lastWrite
+    "[$(Get-Date)] version.py last modified: $lastWrite (age: $($age.TotalSeconds) sec)" | Out-File $logFile -Append
+    if ($age.TotalSeconds -gt 60) {{
+        "[$(Get-Date)] WARNING: version.py was NOT updated — installer may have failed to replace files!" | Out-File $logFile -Append
+    }}
+}}
 
-# Relaunch the app
-$appExe = "{app_exe_esc}"
+# Step 6: Relaunch the app
+$appExe = '{app_exe_ps}'
 if (Test-Path $appExe) {{
     "[$(Get-Date)] Relaunching: $appExe" | Out-File $logFile -Append
     Start-Process -FilePath $appExe
@@ -239,13 +274,11 @@ if (Test-Path $appExe) {{
             f.write(ps_content)
 
         # Use a tiny VBScript to launch PowerShell completely hidden (no window at all)
-        # This is the only reliable way to run a script with zero visible windows on Windows
         vbs_path = os.path.join(tempfile.gettempdir(), "nvs_update_launcher.vbs")
+        # VBScript does NOT need escaped backslashes — just double-quotes via ""
         vbs_content = (
             'Set shell = CreateObject("WScript.Shell")\n'
-            'shell.Run "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File """'
-            + ps_path.replace("\\", "\\\\")
-            + '"""", 0, False\n'
+            f'shell.Run "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{ps_path}""", 0, False\n'
         )
         with open(vbs_path, "w") as f:
             f.write(vbs_content)
@@ -256,7 +289,8 @@ if (Test-Path $appExe) {{
             creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
         )
 
-        # Force exit the app immediately
+        # Force exit the app immediately — this kills pythonw.exe
+        # NVS_Pro.exe (parent, subprocess.call) will also exit shortly after
         os._exit(0)
     except Exception:
         # Fallback: just run the installer directly and exit
