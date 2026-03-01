@@ -275,10 +275,12 @@ if (Test-Path $appExe) {{
 
         # Use a tiny VBScript to launch PowerShell completely hidden (no window at all)
         vbs_path = os.path.join(tempfile.gettempdir(), "nvs_update_launcher.vbs")
-        # VBScript does NOT need escaped backslashes — just double-quotes via ""
+        # VBScript quoting: use string concatenation with Chr(34) for embedded quotes
         vbs_content = (
             'Set shell = CreateObject("WScript.Shell")\n'
-            f'shell.Run "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{ps_path}""", 0, False\n'
+            'Dim cmd\n'
+            f'cmd = "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File " & Chr(34) & "{ps_path}" & Chr(34)\n'
+            'shell.Run cmd, 0, False\n'
         )
         with open(vbs_path, "w") as f:
             f.write(vbs_content)
