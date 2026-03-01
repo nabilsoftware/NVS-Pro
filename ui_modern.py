@@ -10984,9 +10984,28 @@ def create_splash_pixmap():
     return pixmap
 
 
+def _ensure_patches():
+    """Quick check: ensure torchcodec patches are applied (self-healing after silent updates)"""
+    try:
+        site_packages = Path(__file__).parent / "python" / "Lib" / "site-packages"
+        io_py = site_packages / "pyannote" / "audio" / "core" / "io.py"
+        if io_py.exists():
+            content = io_py.read_text(encoding="utf-8")
+            if "TORCHCODEC_AVAILABLE" not in content and "torchcodec" in content:
+                print("[PATCH] pyannote io.py needs patching, running patch_installed_packages...")
+                from first_run_setup import patch_installed_packages
+                patch_installed_packages()
+                print("[PATCH] Done")
+    except Exception as e:
+        print(f"[PATCH] Warning: {e}")
+
+
 def main():
     try:
         print("Starting app...")
+
+        # Ensure compatibility patches are applied (self-healing after silent updates)
+        _ensure_patches()
 
         # Set Windows AppUserModelID for taskbar icon (must match launcher!)
         try:
