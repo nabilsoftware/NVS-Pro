@@ -11079,11 +11079,12 @@ def main():
                 if msg.clickedButton() != download_btn:
                     return
 
-                # Show progress dialog
+                # Show progress dialog (modal so user can't close it)
                 progress_dialog = QDialog(window)
                 progress_dialog.setWindowTitle("Downloading Update...")
                 progress_dialog.setFixedSize(400, 100)
-                progress_dialog.setWindowFlags(progress_dialog.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+                progress_dialog.setWindowFlags(progress_dialog.windowFlags() & ~Qt.WindowContextHelpButtonHint & ~Qt.WindowCloseButtonHint)
+                progress_dialog.setModal(True)
                 layout = QVBoxLayout(progress_dialog)
                 progress_label = QLabel(f"Downloading v{latest_version}...")
                 progress_bar = QProgressBar()
@@ -11100,7 +11101,8 @@ def main():
                 installer_path = download_update(download_url, on_progress)
                 progress_dialog.close()
 
-                if installer_path:
+                # Validate downloaded file (must be > 1MB to be a real installer)
+                if installer_path and os.path.exists(installer_path) and os.path.getsize(installer_path) > 1_000_000:
                     # Show message that app will close
                     QMessageBox.information(window, "Installing Update",
                         "The application will now close to install the update.\n\n"
