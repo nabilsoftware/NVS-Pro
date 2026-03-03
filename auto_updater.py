@@ -160,13 +160,8 @@ def install_update(installer_path, cleanup_callback=None):
     """
     Launch the downloaded installer and exit the app.
 
-    Architecture:
-    - NVS_Pro.exe (launcher) runs pythonw.exe ui_modern.py via subprocess.call (waits)
-    - os._exit(0) kills pythonw.exe → NVS_Pro.exe also exits shortly after
-    - We need to wait for BOTH processes to fully die before running the installer
-    - If files are still locked, Inno Setup queues replacements for reboot (bad!)
-    - Solution: A batch file that kills processes, waits for file unlock, installs, relaunches
-    - Using cmd.exe batch file — most reliable on all Windows (no VBScript/PowerShell issues)
+    Just opens the installer .exe normally — user clicks Next/Next/Install like
+    a regular install. Inno Setup handles closing the app (CloseApplications=force).
     """
     try:
         # Call cleanup callback if provided (e.g., close all windows)
@@ -176,89 +171,16 @@ def install_update(installer_path, cleanup_callback=None):
             except Exception:
                 pass
 
-        # Determine the app exe path for relaunch after update
-        if getattr(sys, 'frozen', False):
-            app_dir = os.path.dirname(sys.executable)
-        else:
-            app_dir = os.path.dirname(os.path.abspath(__file__))
-        app_exe = os.path.join(app_dir, "NVS_Pro.exe")
-
-        # Write the batch file — uses only cmd.exe built-in commands (no PowerShell, no VBScript)
-        bat_path = os.path.join(tempfile.gettempdir(), "nvs_update.bat")
-        log_path = os.path.join(tempfile.gettempdir(), "nvs_update_log.txt")
-
-        bat_content = f'''@echo off
-echo [%date% %time%] Update script started > "{log_path}"
-
-REM Step 1: Kill app processes
-echo [%date% %time%] Killing processes... >> "{log_path}"
-taskkill /F /IM NVS_Pro.exe >nul 2>&1
-taskkill /F /IM pythonw.exe >nul 2>&1
-
-REM Step 2: Wait for processes to fully die (loop up to 15 times = ~15 sec)
-set /a count=0
-:waitloop
-tasklist /FI "IMAGENAME eq NVS_Pro.exe" 2>nul | find /I "NVS_Pro.exe" >nul 2>&1
-if %errorlevel%==0 goto stillrunning
-tasklist /FI "IMAGENAME eq pythonw.exe" 2>nul | find /I "pythonw.exe" >nul 2>&1
-if %errorlevel%==0 goto stillrunning
-goto procsdead
-:stillrunning
-set /a count+=1
-if %count% geq 15 goto procsdead
-taskkill /F /IM NVS_Pro.exe >nul 2>&1
-taskkill /F /IM pythonw.exe >nul 2>&1
-ping 127.0.0.1 -n 2 >nul
-goto waitloop
-:procsdead
-echo [%date% %time%] Processes dead after %count% checks >> "{log_path}"
-
-REM Step 3: Extra wait for file locks to release
-ping 127.0.0.1 -n 4 >nul
-
-REM Step 4: Run the installer silently
-echo [%date% %time%] Running installer: {installer_path} >> "{log_path}"
-"{installer_path}" /VERYSILENT /SUPPRESSMSGBOXES /CLOSEAPPLICATIONS /SP- /NORESTARTAPPLICATIONS
-echo [%date% %time%] Installer finished with errorlevel %errorlevel% >> "{log_path}"
-
-REM Step 5: Wait a moment for installer to finish writing
-ping 127.0.0.1 -n 4 >nul
-
-REM Step 6: Relaunch the app
-echo [%date% %time%] Relaunching: {app_exe} >> "{log_path}"
-if exist "{app_exe}" (
-    start "" "{app_exe}"
-) else (
-    echo [%date% %time%] ERROR: App exe not found >> "{log_path}"
-)
-
-echo [%date% %time%] Update script finished >> "{log_path}"
-'''
-        with open(bat_path, "w") as f:
-            f.write(bat_content)
-
-        # Launch the batch file completely hidden and detached
-        # CREATE_NO_WINDOW (0x08000000) prevents cmd.exe window from showing
+        # Launch the installer normally — user sees the wizard and clicks through it
         subprocess.Popen(
-            ["cmd.exe", "/c", bat_path],
-            creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP | 0x08000000,
+            [installer_path],
+            creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
         )
 
-        # Give cmd.exe a moment to fully start before we die
+        # Give the installer a moment to start
         time.sleep(1)
 
-        # Force exit the app — this kills pythonw.exe
-        # NVS_Pro.exe (parent, subprocess.call) will also exit shortly after
+        # Exit the app — Inno Setup will handle closing any remaining processes
         os._exit(0)
-    except Exception as e:
-        # Fallback: just run the installer directly and exit
-        print(f"[UPDATE] Primary method failed: {e}, using direct fallback...")
-        try:
-            subprocess.Popen(
-                [installer_path, "/VERYSILENT", "/CLOSEAPPLICATIONS", "/SP-"],
-                creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
-            )
-            time.sleep(1)
-            os._exit(0)
-        except Exception:
-            pass
+    except Exception:
+        pass

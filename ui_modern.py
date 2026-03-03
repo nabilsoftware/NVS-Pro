@@ -11136,11 +11136,6 @@ def main():
 
                 def on_download_done(installer_path):
                     progress_dialog.close()
-                    # Confirm install
-                    QMessageBox.information(window, "Installing Update",
-                        "The application will now close to install the update.\n\n"
-                        "It will restart automatically after installation.")
-                    QApplication.processEvents()
 
                     def cleanup():
                         try:
@@ -11149,6 +11144,7 @@ def main():
                         except Exception:
                             pass
 
+                    # Launch the installer — user clicks through it like a normal install
                     install_update(installer_path, cleanup_callback=cleanup)
 
                 def on_download_error(err_msg):
