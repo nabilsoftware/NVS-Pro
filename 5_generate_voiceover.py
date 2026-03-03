@@ -413,24 +413,43 @@ class SmartTabProcessor:
                 if not self.refresh_tab():
                     return None, None
 
-            # Wait for text input area using JavaScript (comma-separated selectors break in Playwright)
+            # Wait for text input area — fish.audio may use textarea, contenteditable, or custom div
             self.page.wait_for_function("""
                 () => {
+                    // Try standard elements first
                     const ta = document.querySelector('textarea');
                     if (ta && ta.offsetParent !== null) return true;
                     const ce = document.querySelector("[contenteditable='true']");
                     if (ce && ce.offsetParent !== null) return true;
+                    const ce2 = document.querySelector("[contenteditable='plaintext-only']");
+                    if (ce2 && ce2.offsetParent !== null) return true;
+                    // Try role=textbox (React components)
+                    const tb = document.querySelector("[role='textbox']");
+                    if (tb && tb.offsetParent !== null) return true;
+                    // Try any large editable-looking div with placeholder
+                    const ph = document.querySelector("[data-placeholder]");
+                    if (ph && ph.offsetParent !== null) return true;
+                    // Try ProseMirror/tiptap editor
+                    const pm = document.querySelector(".ProseMirror, .tiptap, [class*='editor']");
+                    if (pm && pm.offsetParent !== null) return true;
                     return false;
                 }
-            """, timeout=10000)
+            """, timeout=15000)
 
-            # Find text area — try textarea first (more reliable), then contenteditable
-            text_area = self.page.locator("textarea").last
-            try:
-                if not text_area.is_visible():
-                    text_area = self.page.locator("[contenteditable='true']").last
-            except Exception:
-                text_area = self.page.locator("[contenteditable='true']").last
+            # Find the text area element — try multiple selectors
+            text_area = None
+            for selector in ["textarea", "[contenteditable='true']", "[contenteditable='plaintext-only']", "[role='textbox']", "[data-placeholder]", ".ProseMirror", ".tiptap"]:
+                try:
+                    el = self.page.locator(selector).last
+                    if el.is_visible():
+                        text_area = el
+                        logger.info(f"Tab {self.tab_id}: Found text area with selector: {selector}")
+                        break
+                except Exception:
+                    continue
+            if not text_area:
+                logger.error(f"Tab {self.tab_id}: Could not find text area with any known selector")
+                return None, None
 
             # Wait for generate button using JavaScript (Playwright's wait_for_selector
             # picks wrong button when comma-separated selectors match multiple elements)
@@ -531,15 +550,23 @@ class SmartTabProcessor:
 
             # Clear the text area using multiple methods
             try:
-                # Method 1: JavaScript clear
+                # Method 1: JavaScript clear (try all possible text input types)
                 self.page.evaluate('''
-                    const textArea = document.querySelector("textarea") || document.querySelector("[contenteditable='true']");
+                    const textArea = document.querySelector("textarea")
+                        || document.querySelector("[contenteditable='true']")
+                        || document.querySelector("[contenteditable='plaintext-only']")
+                        || document.querySelector("[role='textbox']")
+                        || document.querySelector("[data-placeholder]")
+                        || document.querySelector(".ProseMirror")
+                        || document.querySelector(".tiptap");
                     if (textArea) {
                         textArea.focus();
-                        if (textArea.contentEditable === "true") {
+                        if (textArea.contentEditable === "true" || textArea.contentEditable === "plaintext-only") {
                             textArea.innerHTML = "";
-                        } else {
+                        } else if (textArea.tagName === "TEXTAREA" || textArea.tagName === "INPUT") {
                             textArea.value = "";
+                        } else {
+                            textArea.innerText = "";
                         }
                     }
                 ''')
@@ -572,12 +599,20 @@ class SmartTabProcessor:
                 escaped_text = paragraph_text.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n').replace(
                     '\r', '')
                 self.page.evaluate(f'''
-                    const textArea = document.querySelector("textarea") || document.querySelector("[contenteditable='true']");
+                    const textArea = document.querySelector("textarea")
+                        || document.querySelector("[contenteditable='true']")
+                        || document.querySelector("[contenteditable='plaintext-only']")
+                        || document.querySelector("[role='textbox']")
+                        || document.querySelector("[data-placeholder]")
+                        || document.querySelector(".ProseMirror")
+                        || document.querySelector(".tiptap");
                     if (textArea) {{
-                        if (textArea.contentEditable === "true") {{
+                        if (textArea.contentEditable === "true" || textArea.contentEditable === "plaintext-only") {{
                             textArea.innerText = "{escaped_text}";
-                        }} else {{
+                        }} else if (textArea.tagName === "TEXTAREA" || textArea.tagName === "INPUT") {{
                             textArea.value = "{escaped_text}";
+                        }} else {{
+                            textArea.innerText = "{escaped_text}";
                         }}
                         textArea.dispatchEvent(new Event('input', {{ bubbles: true }}));
                     }}
