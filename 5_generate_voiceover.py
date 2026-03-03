@@ -426,9 +426,8 @@ class SmartTabProcessor:
                 () => {
                     const buttons = document.querySelectorAll('button');
                     for (const btn of buttons) {
-                        const text = btn.textContent.trim();
-                        if ((text === 'Generate speech' || text === 'Generate' || text === 'Synthesize')
-                            && !btn.getAttribute('aria-haspopup')
+                        const text = btn.innerText || btn.textContent || '';
+                        if ((text.includes('Generate speech') || text.includes('Generate') || text.includes('Synthesize'))
                             && btn.offsetParent !== null) {
                             return true;
                         }
@@ -437,18 +436,18 @@ class SmartTabProcessor:
                 }
             """, timeout=10000)
 
-            # Find the actual generate button by exact text match, skipping dropdown triggers
-            generate_btn = None
-            for text in ["Generate speech", "Generate", "Synthesize"]:
-                btn = self.page.locator(f"button:has-text('{text}'):not([aria-haspopup])").last
-                try:
-                    if btn.is_visible():
-                        generate_btn = btn
-                        break
-                except Exception:
-                    continue
-            if not generate_btn:
-                generate_btn = self.page.locator("button:has-text('Generate')").last
+            # Find the generate button — use Playwright's text matching with last to skip duplicates
+            generate_btn = self.page.locator("button", has_text="Generate speech").last
+            try:
+                if not generate_btn.is_visible():
+                    generate_btn = self.page.locator("button", has_text="Generate").last
+            except Exception:
+                generate_btn = self.page.locator("button", has_text="Generate").last
+            try:
+                if not generate_btn.is_visible():
+                    generate_btn = self.page.locator("button", has_text="Synthesize").last
+            except Exception:
+                pass
 
             self.last_activity = time.time()
             return text_area, generate_btn
@@ -480,9 +479,9 @@ class SmartTabProcessor:
                 return True
 
             # Check if generate button is available (fish.audio button = "Generate speech")
-            for selector in ["button:has-text('Generate speech')", "button:has-text('Generate'):not([aria-haspopup])", "button:has-text('Synthesize')"]:
+            for text in ["Generate speech", "Generate", "Synthesize"]:
                 try:
-                    btn = self.page.locator(selector).last
+                    btn = self.page.locator("button", has_text=text).last
                     if btn.is_visible() and btn.is_enabled():
                         self.last_activity = time.time()
                         return True
@@ -1264,9 +1263,8 @@ def run_multi_window_from_orchestrator(script_folders, num_tabs_per_window):
                             () => {
                                 const buttons = document.querySelectorAll('button');
                                 for (const btn of buttons) {
-                                    const text = btn.textContent.trim();
-                                    if ((text === 'Generate speech' || text === 'Generate' || text === 'Synthesize')
-                                        && !btn.getAttribute('aria-haspopup')
+                                    const text = btn.innerText || btn.textContent || '';
+                                    if ((text.includes('Generate speech') || text.includes('Generate') || text.includes('Synthesize'))
                                         && btn.offsetParent !== null) {
                                         return true;
                                     }
@@ -1349,11 +1347,13 @@ def run_multi_window_from_orchestrator(script_folders, num_tabs_per_window):
                         for wp in window_processors:
                             for tab in wp['tabs']:
                                 try:
-                                    gs_btn = tab.page.locator("button:has-text('Generate speech')").last
-                                    gen_btn = tab.page.locator("button:has-text('Generate'):not([aria-haspopup])").last
-                                    syn_btn = tab.page.locator("button:has-text('Synthesize')").first
-                                    dl_btn = tab.page.locator("button:has-text('Download')").first
-                                    logger.warning(f"  {tab.tab_id}: 'Generate speech'={gs_btn.is_visible()}, Generate(filtered)={gen_btn.is_visible()}, Synthesize={syn_btn.is_visible()}, Download={dl_btn.is_visible()}, busy={tab.is_busy}, errors={tab.error_count}")
+                                    gs_btn = tab.page.locator("button", has_text="Generate speech").last
+                                    gen_btn = tab.page.locator("button", has_text="Generate").last
+                                    dl_btn = tab.page.locator("button", has_text="Download").first
+                                    # Also dump all button texts via JS for debugging
+                                    all_btns = tab.page.evaluate("() => Array.from(document.querySelectorAll('button')).map(b => b.innerText.trim().substring(0,50)).filter(t => t.length > 0)")
+                                    logger.warning(f"  {tab.tab_id}: 'Generate speech'={gs_btn.is_visible()}, 'Generate'={gen_btn.is_visible()}, Download={dl_btn.is_visible()}, busy={tab.is_busy}, errors={tab.error_count}")
+                                    logger.warning(f"  {tab.tab_id}: ALL button texts: {all_btns}")
                                 except Exception as e:
                                     logger.warning(f"  {tab.tab_id}: Error checking state: {e}")
                     if no_ready_count > 120:  # 60 seconds with no progress
