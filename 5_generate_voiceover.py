@@ -413,40 +413,88 @@ class SmartTabProcessor:
                 if not self.refresh_tab():
                     return None, None
 
-            # Wait for text input area — fish.audio may use textarea, contenteditable, or custom div
-            self.page.wait_for_function("""
-                () => {
-                    // Try standard elements first
-                    const ta = document.querySelector('textarea');
-                    if (ta && ta.offsetParent !== null) return true;
-                    const ce = document.querySelector("[contenteditable='true']");
-                    if (ce && ce.offsetParent !== null) return true;
-                    const ce2 = document.querySelector("[contenteditable='plaintext-only']");
-                    if (ce2 && ce2.offsetParent !== null) return true;
-                    // Try role=textbox (React components)
-                    const tb = document.querySelector("[role='textbox']");
-                    if (tb && tb.offsetParent !== null) return true;
-                    // Try any large editable-looking div with placeholder
-                    const ph = document.querySelector("[data-placeholder]");
-                    if (ph && ph.offsetParent !== null) return true;
-                    // Try ProseMirror/tiptap editor
-                    const pm = document.querySelector(".ProseMirror, .tiptap, [class*='editor']");
-                    if (pm && pm.offsetParent !== null) return true;
-                    return false;
-                }
-            """, timeout=15000)
+            # Wait for text input area — fish.audio uses React SPA, element may take time to render
+            # Don't check offsetParent (can be null for fixed/absolute positioned elements)
+            try:
+                self.page.wait_for_function("""
+                    () => {
+                        if (document.querySelector('textarea')) return true;
+                        if (document.querySelector("[contenteditable='true']")) return true;
+                        if (document.querySelector("[contenteditable='plaintext-only']")) return true;
+                        if (document.querySelector("[role='textbox']")) return true;
+                        if (document.querySelector("[data-placeholder]")) return true;
+                        if (document.querySelector(".ProseMirror, .tiptap")) return true;
+                        // Also check for placeholder text "Enter your text" anywhere
+                        if (document.querySelector("[placeholder*='text']")) return true;
+                        if (document.querySelector("[placeholder*='Enter']")) return true;
+                        return false;
+                    }
+                """, timeout=20000)
+            except Exception as wait_err:
+                # Debug: dump what elements ARE on the page so we can identify the text input
+                try:
+                    debug_info = self.page.evaluate("""
+                        () => {
+                            const info = {};
+                            info.textareas = document.querySelectorAll('textarea').length;
+                            info.contenteditables = document.querySelectorAll('[contenteditable]').length;
+                            info.role_textbox = document.querySelectorAll("[role='textbox']").length;
+                            info.inputs = document.querySelectorAll('input[type="text"]').length;
+                            info.data_placeholder = document.querySelectorAll('[data-placeholder]').length;
+                            info.placeholder = document.querySelectorAll('[placeholder]').length;
+                            // Get all placeholders
+                            info.placeholder_texts = Array.from(document.querySelectorAll('[placeholder]'))
+                                .map(el => el.tagName + ': ' + el.getAttribute('placeholder')).slice(0, 10);
+                            // Get elements with "text" in class name
+                            info.text_classes = Array.from(document.querySelectorAll('[class*="text"]'))
+                                .map(el => el.tagName + '.' + el.className.substring(0, 80)).slice(0, 10);
+                            // Check page URL
+                            info.url = window.location.href;
+                            // Count total interactive elements
+                            info.all_inputs = document.querySelectorAll('input, textarea, select, [contenteditable]').length;
+                            // Get all input types
+                            info.input_types = Array.from(document.querySelectorAll('input'))
+                                .map(el => el.type + (el.placeholder ? ': ' + el.placeholder : '')).slice(0, 10);
+                            return info;
+                        }
+                    """)
+                    logger.error(f"Tab {self.tab_id}: Text area wait timeout. Page debug: {debug_info}")
+                except Exception:
+                    logger.error(f"Tab {self.tab_id}: Text area wait timeout: {wait_err}")
 
-            # Find the text area element — try multiple selectors
+            # Find the text area element — try multiple selectors (including placeholder-based)
             text_area = None
-            for selector in ["textarea", "[contenteditable='true']", "[contenteditable='plaintext-only']", "[role='textbox']", "[data-placeholder]", ".ProseMirror", ".tiptap"]:
+            selectors = [
+                "textarea",
+                "[contenteditable='true']",
+                "[contenteditable='plaintext-only']",
+                "[role='textbox']",
+                "[data-placeholder]",
+                "[placeholder*='text']",
+                "[placeholder*='Enter']",
+                ".ProseMirror",
+                ".tiptap",
+            ]
+            for selector in selectors:
                 try:
                     el = self.page.locator(selector).last
-                    if el.is_visible():
+                    if el.count() > 0 and el.is_visible():
                         text_area = el
                         logger.info(f"Tab {self.tab_id}: Found text area with selector: {selector}")
                         break
                 except Exception:
                     continue
+
+            # Fallback: try Playwright text-based locator for placeholder
+            if not text_area:
+                try:
+                    el = self.page.get_by_placeholder("Enter your text")
+                    if el.count() > 0 and el.is_visible():
+                        text_area = el
+                        logger.info(f"Tab {self.tab_id}: Found text area via placeholder 'Enter your text'")
+                except Exception:
+                    pass
+
             if not text_area:
                 logger.error(f"Tab {self.tab_id}: Could not find text area with any known selector")
                 return None, None
@@ -557,6 +605,8 @@ class SmartTabProcessor:
                         || document.querySelector("[contenteditable='plaintext-only']")
                         || document.querySelector("[role='textbox']")
                         || document.querySelector("[data-placeholder]")
+                        || document.querySelector("[placeholder*='text']")
+                        || document.querySelector("[placeholder*='Enter']")
                         || document.querySelector(".ProseMirror")
                         || document.querySelector(".tiptap");
                     if (textArea) {
@@ -604,6 +654,8 @@ class SmartTabProcessor:
                         || document.querySelector("[contenteditable='plaintext-only']")
                         || document.querySelector("[role='textbox']")
                         || document.querySelector("[data-placeholder]")
+                        || document.querySelector("[placeholder*='text']")
+                        || document.querySelector("[placeholder*='Enter']")
                         || document.querySelector(".ProseMirror")
                         || document.querySelector(".tiptap");
                     if (textArea) {{
