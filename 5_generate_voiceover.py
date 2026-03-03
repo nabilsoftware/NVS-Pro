@@ -413,12 +413,24 @@ class SmartTabProcessor:
                 if not self.refresh_tab():
                     return None, None
 
-            # Wait for elements to be available
-            self.page.wait_for_selector("[contenteditable='true'], textarea", timeout=10000)
+            # Wait for text input area using JavaScript (comma-separated selectors break in Playwright)
+            self.page.wait_for_function("""
+                () => {
+                    const ta = document.querySelector('textarea');
+                    if (ta && ta.offsetParent !== null) return true;
+                    const ce = document.querySelector("[contenteditable='true']");
+                    if (ce && ce.offsetParent !== null) return true;
+                    return false;
+                }
+            """, timeout=10000)
 
-            text_area = self.page.locator("[contenteditable='true']").first
-            if not text_area.is_visible():
-                text_area = self.page.locator("textarea").first
+            # Find text area — try textarea first (more reliable), then contenteditable
+            text_area = self.page.locator("textarea").last
+            try:
+                if not text_area.is_visible():
+                    text_area = self.page.locator("[contenteditable='true']").last
+            except Exception:
+                text_area = self.page.locator("[contenteditable='true']").last
 
             # Wait for generate button using JavaScript (Playwright's wait_for_selector
             # picks wrong button when comma-separated selectors match multiple elements)
@@ -521,7 +533,7 @@ class SmartTabProcessor:
             try:
                 # Method 1: JavaScript clear
                 self.page.evaluate('''
-                    const textArea = document.querySelector("[contenteditable='true']") || document.querySelector("textarea");
+                    const textArea = document.querySelector("textarea") || document.querySelector("[contenteditable='true']");
                     if (textArea) {
                         textArea.focus();
                         if (textArea.contentEditable === "true") {
@@ -560,7 +572,7 @@ class SmartTabProcessor:
                 escaped_text = paragraph_text.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n').replace(
                     '\r', '')
                 self.page.evaluate(f'''
-                    const textArea = document.querySelector("[contenteditable='true']") || document.querySelector("textarea");
+                    const textArea = document.querySelector("textarea") || document.querySelector("[contenteditable='true']");
                     if (textArea) {{
                         if (textArea.contentEditable === "true") {{
                             textArea.innerText = "{escaped_text}";
