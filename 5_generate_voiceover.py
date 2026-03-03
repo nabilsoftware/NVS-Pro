@@ -456,14 +456,17 @@ class SmartTabProcessor:
             if download_btn.is_visible():
                 return True
 
-            # Check if generate button is available
-            generate_btn = self.page.locator("button:has-text('Generate')").first
-            result = generate_btn.is_visible() and generate_btn.is_enabled()
+            # Check if generate button is available (fish.audio uses "Generate speech" or "Generate")
+            for selector in ["button:has-text('Generate speech')", "button:has-text('Generate')", "button:has-text('Synthesize')"]:
+                try:
+                    btn = self.page.locator(selector).first
+                    if btn.is_visible() and btn.is_enabled():
+                        self.last_activity = time.time()
+                        return True
+                except Exception:
+                    continue
 
-            if result:
-                self.last_activity = time.time()
-
-            return result
+            return False
 
         except Exception as e:
             logger.warning(f"Tab {self.tab_id}: Error checking readiness: {e}")
@@ -1226,12 +1229,22 @@ def run_multi_window_from_orchestrator(script_folders, num_tabs_per_window):
                 logger.error("❌ No windows could be created!")
                 return
 
-            # Wait for all tabs to initialize
+            # Wait for all tabs to fully load (SPA needs time to render)
             logger.info(f"⏳ Waiting for all windows to initialize...")
             time.sleep(3)
 
+            # Wait for Generate button to appear on each tab (ensures page fully loaded)
+            for wp in window_processors:
+                for tab in wp['tabs']:
+                    try:
+                        tab.page.wait_for_selector("button:has-text('Generate'), button:has-text('Synthesize')", timeout=15000)
+                        logger.info(f"✅ {tab.tab_id}: Generate button found")
+                    except Exception as e:
+                        logger.warning(f"⚠️ {tab.tab_id}: Generate button not found after 15s: {e}")
+
             logger.info(f"🚀 Starting PARALLEL processing across {len(window_processors)} windows...")
             total_start_time = time.time()
+            no_ready_count = 0
 
             # Process all windows in parallel using a main loop
             while any(wp['pending_tasks'] or any(tab.is_busy for tab in wp['tabs']) for wp in window_processors):
@@ -1284,6 +1297,33 @@ def run_multi_window_from_orchestrator(script_folders, num_tabs_per_window):
                             tab.current_task_start = None
                             del task_assignments[task_idx]
                             wp['failed'] += 1
+
+                # Check if no tabs could accept tasks (all returned not ready)
+                any_assigned = any(wp['task_assignments'] for wp in window_processors)
+                any_pending_unassigned = any(
+                    task['idx'] not in wp['task_assignments']
+                    for wp in window_processors
+                    for task in wp['pending_tasks']
+                )
+                if not any_assigned and any_pending_unassigned:
+                    no_ready_count += 1
+                    if no_ready_count % 20 == 1:  # Log every 10 seconds (20 * 0.5s)
+                        logger.warning(f"⚠️ No tabs ready for {no_ready_count * 0.5:.0f}s — waiting for tabs to become available...")
+                        # Debug: check what each tab sees
+                        for wp in window_processors:
+                            for tab in wp['tabs']:
+                                try:
+                                    gen_btn = tab.page.locator("button:has-text('Generate')").first
+                                    syn_btn = tab.page.locator("button:has-text('Synthesize')").first
+                                    dl_btn = tab.page.locator("button:has-text('Download')").first
+                                    logger.warning(f"  {tab.tab_id}: Generate={gen_btn.is_visible()}, Synthesize={syn_btn.is_visible()}, Download={dl_btn.is_visible()}, busy={tab.is_busy}, errors={tab.error_count}")
+                                except Exception as e:
+                                    logger.warning(f"  {tab.tab_id}: Error checking state: {e}")
+                    if no_ready_count > 120:  # 60 seconds with no progress
+                        logger.error(f"❌ No tabs became ready after 60 seconds — aborting")
+                        break
+                else:
+                    no_ready_count = 0
 
                 # Small pause between iterations
                 time.sleep(0.5)
