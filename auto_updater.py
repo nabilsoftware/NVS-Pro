@@ -165,7 +165,8 @@ def install_update(installer_path, cleanup_callback=None):
     - os._exit(0) kills pythonw.exe → NVS_Pro.exe also exits shortly after
     - We need to wait for BOTH processes to fully die before running the installer
     - If files are still locked, Inno Setup queues replacements for reboot (bad!)
-    - Solution: PowerShell script force-kills both, verifies files are unlocked, then installs
+    - Solution: A batch file that kills processes, waits for file unlock, installs, relaunches
+    - Using cmd.exe batch file — most reliable on all Windows (no VBScript/PowerShell issues)
     """
     try:
         # Call cleanup callback if provided (e.g., close all windows)
@@ -182,138 +183,82 @@ def install_update(installer_path, cleanup_callback=None):
             app_dir = os.path.dirname(os.path.abspath(__file__))
         app_exe = os.path.join(app_dir, "NVS_Pro.exe")
 
-        # Escape backslashes for PowerShell string embedding
-        installer_ps = installer_path.replace("'", "''")
-        app_exe_ps = app_exe.replace("'", "''")
-        app_dir_ps = app_dir.replace("'", "''")
+        # Write the batch file — uses only cmd.exe built-in commands (no PowerShell, no VBScript)
+        bat_path = os.path.join(tempfile.gettempdir(), "nvs_update.bat")
+        log_path = os.path.join(tempfile.gettempdir(), "nvs_update_log.txt")
 
-        # PowerShell script that handles the entire update process
-        ps_path = os.path.join(tempfile.gettempdir(), "nvs_update.ps1")
-        ps_content = f'''# NVS Pro Auto-Update Script
-$ErrorActionPreference = "SilentlyContinue"
+        bat_content = f'''@echo off
+echo [%date% %time%] Update script started > "{log_path}"
 
-# Log file for debugging
-$logFile = Join-Path $env:TEMP "nvs_update_log.txt"
-"[$(Get-Date)] Update script started" | Out-File $logFile
+REM Step 1: Kill app processes
+echo [%date% %time%] Killing processes... >> "{log_path}"
+taskkill /F /IM NVS_Pro.exe >nul 2>&1
+taskkill /F /IM pythonw.exe >nul 2>&1
 
-# Step 1: Force-kill ALL app processes immediately
-"[$(Get-Date)] Killing app processes..." | Out-File $logFile -Append
-Stop-Process -Name "NVS_Pro" -Force -ErrorAction SilentlyContinue
-Stop-Process -Name "pythonw" -Force -ErrorAction SilentlyContinue
-Start-Sleep -Seconds 2
+REM Step 2: Wait for processes to fully die (loop up to 15 times = ~15 sec)
+set /a count=0
+:waitloop
+tasklist /FI "IMAGENAME eq NVS_Pro.exe" 2>nul | find /I "NVS_Pro.exe" >nul 2>&1
+if %errorlevel%==0 goto stillrunning
+tasklist /FI "IMAGENAME eq pythonw.exe" 2>nul | find /I "pythonw.exe" >nul 2>&1
+if %errorlevel%==0 goto stillrunning
+goto procsdead
+:stillrunning
+set /a count+=1
+if %count% geq 15 goto procsdead
+taskkill /F /IM NVS_Pro.exe >nul 2>&1
+taskkill /F /IM pythonw.exe >nul 2>&1
+ping 127.0.0.1 -n 2 >nul
+goto waitloop
+:procsdead
+echo [%date% %time%] Processes dead after %count% checks >> "{log_path}"
 
-# Step 2: Wait until NVS_Pro.exe and pythonw.exe are completely gone (up to 30 sec)
-$waited = 0
-while ($waited -lt 30) {{
-    $nvs = Get-Process -Name "NVS_Pro" -ErrorAction SilentlyContinue
-    $pyw = Get-Process -Name "pythonw" -ErrorAction SilentlyContinue
-    if ((-not $nvs) -and (-not $pyw)) {{ break }}
+REM Step 3: Extra wait for file locks to release
+ping 127.0.0.1 -n 4 >nul
 
-    # Keep trying to kill them
-    if ($nvs) {{ Stop-Process -Name "NVS_Pro" -Force -ErrorAction SilentlyContinue }}
-    if ($pyw) {{ Stop-Process -Name "pythonw" -Force -ErrorAction SilentlyContinue }}
+REM Step 4: Run the installer silently
+echo [%date% %time%] Running installer: {installer_path} >> "{log_path}"
+"{installer_path}" /VERYSILENT /SUPPRESSMSGBOXES /CLOSEAPPLICATIONS /SP- /NORESTARTAPPLICATIONS
+echo [%date% %time%] Installer finished with errorlevel %errorlevel% >> "{log_path}"
 
-    Start-Sleep -Seconds 2
-    $waited += 2
-}}
-"[$(Get-Date)] Processes gone after $waited sec" | Out-File $logFile -Append
+REM Step 5: Wait a moment for installer to finish writing
+ping 127.0.0.1 -n 4 >nul
 
-# Step 3: Wait for file locks to release — test by opening a key file
-$appDir = '{app_dir_ps}'
-$testFile = Join-Path $appDir "ui_modern.py"
-$unlocked = $false
-for ($i = 0; $i -lt 15; $i++) {{
-    try {{
-        if (Test-Path $testFile) {{
-            $stream = [System.IO.File]::Open($testFile, 'Open', 'ReadWrite', 'None')
-            $stream.Close()
-            $stream.Dispose()
-            $unlocked = $true
-            break
-        }} else {{
-            $unlocked = $true
-            break
-        }}
-    }} catch {{
-        Start-Sleep -Seconds 1
-    }}
-}}
-"[$(Get-Date)] File unlock check: unlocked=$unlocked" | Out-File $logFile -Append
+REM Step 6: Relaunch the app
+echo [%date% %time%] Relaunching: {app_exe} >> "{log_path}"
+if exist "{app_exe}" (
+    start "" "{app_exe}"
+) else (
+    echo [%date% %time%] ERROR: App exe not found >> "{log_path}"
+)
 
-# Step 4: Run the installer silently and wait for it to finish
-$installerPath = '{installer_ps}'
-"[$(Get-Date)] Running installer: $installerPath" | Out-File $logFile -Append
-
-$proc = Start-Process -FilePath $installerPath -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /CLOSEAPPLICATIONS /SP- /NORESTARTAPPLICATIONS" -Wait -PassThru -WindowStyle Hidden
-"[$(Get-Date)] Installer exit code: $($proc.ExitCode)" | Out-File $logFile -Append
-
-# Step 5: Verify the update was applied by checking if version.py was modified recently
-Start-Sleep -Seconds 2
-$versionFile = Join-Path $appDir "version.py"
-if (Test-Path $versionFile) {{
-    $lastWrite = (Get-Item $versionFile).LastWriteTime
-    $age = (Get-Date) - $lastWrite
-    "[$(Get-Date)] version.py last modified: $lastWrite (age: $($age.TotalSeconds) sec)" | Out-File $logFile -Append
-    if ($age.TotalSeconds -gt 60) {{
-        "[$(Get-Date)] WARNING: version.py was NOT updated — installer may have failed to replace files!" | Out-File $logFile -Append
-    }}
-}}
-
-# Step 6: Relaunch the app
-$appExe = '{app_exe_ps}'
-if (Test-Path $appExe) {{
-    "[$(Get-Date)] Relaunching: $appExe" | Out-File $logFile -Append
-    Start-Process -FilePath $appExe
-}} else {{
-    "[$(Get-Date)] ERROR: App exe not found: $appExe" | Out-File $logFile -Append
-}}
-
-"[$(Get-Date)] Update script finished" | Out-File $logFile -Append
+echo [%date% %time%] Update script finished >> "{log_path}"
 '''
-        with open(ps_path, "w", encoding="utf-8") as f:
-            f.write(ps_content)
+        with open(bat_path, "w") as f:
+            f.write(bat_content)
 
-        # Use a tiny VBScript to launch PowerShell completely hidden (no window at all)
-        vbs_path = os.path.join(tempfile.gettempdir(), "nvs_update_launcher.vbs")
-        # VBScript quoting: use string concatenation with Chr(34) for embedded quotes
-        vbs_content = (
-            'Set shell = CreateObject("WScript.Shell")\n'
-            'Dim cmd\n'
-            f'cmd = "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File " & Chr(34) & "{ps_path}" & Chr(34)\n'
-            'shell.Run cmd, 0, False\n'
-        )
-        with open(vbs_path, "w") as f:
-            f.write(vbs_content)
-
-        # Launch the VBScript (completely invisible, fully detached from our process)
+        # Launch the batch file completely hidden and detached
+        # CREATE_NO_WINDOW (0x08000000) prevents cmd.exe window from showing
         subprocess.Popen(
-            ["wscript.exe", vbs_path],
-            creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
+            ["cmd.exe", "/c", bat_path],
+            creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP | 0x08000000,
         )
 
-        # Force exit the app immediately — this kills pythonw.exe
+        # Give cmd.exe a moment to fully start before we die
+        time.sleep(1)
+
+        # Force exit the app — this kills pythonw.exe
         # NVS_Pro.exe (parent, subprocess.call) will also exit shortly after
         os._exit(0)
     except Exception as e:
-        # Fallback: use a simple batch file with delay
-        # This handles the case where VBScript/PowerShell fails
-        print(f"[UPDATE] Primary method failed: {e}, using fallback...")
+        # Fallback: just run the installer directly and exit
+        print(f"[UPDATE] Primary method failed: {e}, using direct fallback...")
         try:
-            bat_path = os.path.join(tempfile.gettempdir(), "nvs_update_fallback.bat")
-            bat_content = (
-                '@echo off\n'
-                'ping 127.0.0.1 -n 8 >nul\n'  # Wait ~7 seconds for processes to die
-                f'taskkill /F /IM NVS_Pro.exe >nul 2>&1\n'
-                f'taskkill /F /IM pythonw.exe >nul 2>&1\n'
-                'ping 127.0.0.1 -n 4 >nul\n'  # Wait 3 more seconds
-                f'start "" "{installer_path}" /VERYSILENT /CLOSEAPPLICATIONS /SP- /NORESTARTAPPLICATIONS\n'
-            )
-            with open(bat_path, "w") as f:
-                f.write(bat_content)
             subprocess.Popen(
-                ["cmd.exe", "/c", bat_path],
-                creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP | 0x08000000,
+                [installer_path, "/VERYSILENT", "/CLOSEAPPLICATIONS", "/SP-"],
+                creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
             )
+            time.sleep(1)
             os._exit(0)
         except Exception:
             pass
