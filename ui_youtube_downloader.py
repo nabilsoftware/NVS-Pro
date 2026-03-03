@@ -185,15 +185,13 @@ class DownloadWorker(QThread):
                 if ffmpeg_path:
                     cmd.extend(['--ffmpeg-location', ffmpeg_path])
 
-                # Fix for YouTube 403 errors (Jan 2025+)
-                # Use web_embedded client which bypasses most restrictions
-                # Use js-runtimes with explicit node path for JS challenge solving (yt-dlp 2026.02+)
-                # --remote-components downloads challenge solver scripts from GitHub
+                # yt-dlp 2026.02+ uses JS challenge solving for YouTube bot detection
+                # --js-runtimes points to bundled Node.js, --remote-components fetches solver from GitHub
+                # NOTE: Do NOT use web_embedded player client — causes error 152 on yt-dlp 2026.02+
                 node_exe = find_node_exe()
                 js_runtime_arg = f'node:{node_exe}' if node_exe else 'node'
 
                 cmd.extend([
-                    '--extractor-args', 'youtube:player_client=web_embedded',
                     '--js-runtimes', js_runtime_arg,
                     '--remote-components', 'ejs:github',
                     '--no-check-certificates',

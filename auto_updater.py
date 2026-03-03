@@ -294,12 +294,25 @@ if (Test-Path $appExe) {{
         # Force exit the app immediately — this kills pythonw.exe
         # NVS_Pro.exe (parent, subprocess.call) will also exit shortly after
         os._exit(0)
-    except Exception:
-        # Fallback: just run the installer directly and exit
+    except Exception as e:
+        # Fallback: use a simple batch file with delay
+        # This handles the case where VBScript/PowerShell fails
+        print(f"[UPDATE] Primary method failed: {e}, using fallback...")
         try:
+            bat_path = os.path.join(tempfile.gettempdir(), "nvs_update_fallback.bat")
+            bat_content = (
+                '@echo off\n'
+                'ping 127.0.0.1 -n 8 >nul\n'  # Wait ~7 seconds for processes to die
+                f'taskkill /F /IM NVS_Pro.exe >nul 2>&1\n'
+                f'taskkill /F /IM pythonw.exe >nul 2>&1\n'
+                'ping 127.0.0.1 -n 4 >nul\n'  # Wait 3 more seconds
+                f'start "" "{installer_path}" /VERYSILENT /CLOSEAPPLICATIONS /SP- /NORESTARTAPPLICATIONS\n'
+            )
+            with open(bat_path, "w") as f:
+                f.write(bat_content)
             subprocess.Popen(
-                [installer_path, "/VERYSILENT", "/CLOSEAPPLICATIONS", "/SP-"],
-                creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
+                ["cmd.exe", "/c", bat_path],
+                creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP | 0x08000000,
             )
             os._exit(0)
         except Exception:

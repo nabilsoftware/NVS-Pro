@@ -1,7 +1,7 @@
 """Version information for Nabil Video Studio Pro"""
 
-VERSION = "1.7.0"
-VERSION_TUPLE = (1, 7, 0, 0)
+VERSION = "1.7.1"
+VERSION_TUPLE = (1, 7, 1, 0)
 APP_NAME = "Nabil Video Studio Pro"
 AUTHOR = "Nabil Software"
 COPYRIGHT = "Copyright (C) 2025 Nabil Software"
