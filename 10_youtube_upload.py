@@ -213,6 +213,53 @@ def full_cleanup_before_start(profile_name: str, browser_profile_path: str = Non
 
 
 # =============================================================================
+# CHROME VERSION DETECTION & CACHE MANAGEMENT
+# =============================================================================
+
+def find_chrome_version() -> str:
+    """Detect installed Chrome version from Windows registry for diagnostics."""
+    try:
+        import winreg
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+            r"Software\Google\Chrome\BLBeacon")
+        version, _ = winreg.QueryValueEx(key, "version")
+        winreg.CloseKey(key)
+        return version
+    except Exception:
+        pass
+    # Fallback: check common Chrome paths
+    chrome_paths = [
+        Path(os.environ.get('PROGRAMFILES', 'C:\\Program Files')) / 'Google' / 'Chrome' / 'Application' / 'chrome.exe',
+        Path(os.environ.get('PROGRAMFILES(X86)', 'C:\\Program Files (x86)')) / 'Google' / 'Chrome' / 'Application' / 'chrome.exe',
+        Path(os.environ.get('LOCALAPPDATA', '')) / 'Google' / 'Chrome' / 'Application' / 'chrome.exe',
+    ]
+    for p in chrome_paths:
+        if p.exists():
+            return f"found at {p}"
+    return "not found"
+
+
+def clear_selenium_cache():
+    """Clear Selenium Manager's cached drivers to force re-download of matching version."""
+    import shutil
+    cache_dirs = [
+        Path(os.environ.get('LOCALAPPDATA', '')) / 'selenium',
+        Path.home() / '.cache' / 'selenium',
+    ]
+    cleared = False
+    for cache_dir in cache_dirs:
+        if cache_dir.exists():
+            try:
+                shutil.rmtree(cache_dir)
+                logger.info(f"🗑️ Cleared Selenium driver cache: {cache_dir}")
+                cleared = True
+            except Exception as e:
+                logger.warning(f"⚠️ Could not clear cache {cache_dir}: {e}")
+    if not cleared:
+        logger.info("ℹ️ No Selenium cache found to clear")
+
+
+# =============================================================================
 # NEW: BROWSER VERIFICATION FUNCTIONS
 # =============================================================================
 
@@ -452,6 +499,15 @@ def setup_driver(profile_name: str, browser_profile_path: str = None, retry_coun
         if not verify_browser_started(driver):
             raise WebDriverException("Browser started but is not responsive")
 
+        # Log Chrome + ChromeDriver versions for diagnostics
+        try:
+            caps = driver.capabilities
+            chrome_ver = caps.get('browserVersion', 'unknown')
+            driver_ver = caps.get('chrome', {}).get('chromedriverVersion', 'unknown').split(' ')[0]
+            logger.info(f"🌐 Chrome: v{chrome_ver}, ChromeDriver: v{driver_ver}")
+        except Exception:
+            pass
+
         # Set page load timeout
         driver.set_page_load_timeout(60)
 
@@ -463,13 +519,45 @@ def setup_driver(profile_name: str, browser_profile_path: str = None, retry_coun
         # Check if it's a profile lock issue
         if 'user data directory' in error_str or 'already in use' in error_str:
             logger.warning(f"⚠️ Profile appears to be locked. Attempting cleanup...")
-
-            # Force kill Chrome and clean up
             kill_chrome_processes_for_profile(profile_name)
             cleanup_profile_locks(profile_name, browser_profile_path)
             time.sleep(3)
 
-            # Retry if we haven't exceeded max retries
+            if retry_count < MAX_RETRIES - 1:
+                logger.info(f"🔄 Retrying browser start (attempt {retry_count + 2}/{MAX_RETRIES})...")
+                return setup_driver(profile_name, browser_profile_path, retry_count + 1)
+
+        # Chrome crashed or version mismatch
+        elif any(phrase in error_str for phrase in [
+            'session not created', 'chrome instance exited',
+            'chrome failed to start', 'chrome not reachable',
+        ]):
+            chrome_ver = find_chrome_version()
+            logger.warning(f"⚠️ Chrome failed to start (installed: {chrome_ver}). Clearing driver cache...")
+
+            # Clear cached ChromeDriver so Selenium re-downloads matching version
+            clear_selenium_cache()
+            kill_chrome_processes_for_profile(profile_name)
+            cleanup_profile_locks(profile_name, browser_profile_path)
+            time.sleep(3)
+
+            # On last retry attempt, try with a fresh browser profile
+            if retry_count == MAX_RETRIES - 2:
+                if browser_profile_path:
+                    old_profile = Path(browser_profile_path)
+                else:
+                    old_profile = Path(DEFAULT_BROWSER_PROFILES_FOLDER) / f"profile_{profile_name}"
+                if old_profile.exists():
+                    backup_path = old_profile.with_name(old_profile.name + "_backup")
+                    try:
+                        if backup_path.exists():
+                            import shutil
+                            shutil.rmtree(backup_path)
+                        old_profile.rename(backup_path)
+                        logger.warning(f"⚠️ Renamed corrupted profile to {backup_path.name}. Will use fresh profile (re-login to YouTube needed).")
+                    except Exception as rename_err:
+                        logger.warning(f"⚠️ Could not rename profile: {rename_err}")
+
             if retry_count < MAX_RETRIES - 1:
                 logger.info(f"🔄 Retrying browser start (attempt {retry_count + 2}/{MAX_RETRIES})...")
                 return setup_driver(profile_name, browser_profile_path, retry_count + 1)
@@ -521,12 +609,38 @@ def setup_driver_with_remote_debugging(profile_name: str) -> tuple:
     })
 
     logger.info(f"🌐 Starting browser with remote debugging on port {debug_port}")
-    driver = webdriver.Chrome(options=chrome_options)
+    try:
+        driver = webdriver.Chrome(options=chrome_options)
+    except (WebDriverException, SessionNotCreatedException) as e:
+        error_str = str(e).lower()
+        if any(phrase in error_str for phrase in [
+            'session not created', 'chrome instance exited',
+            'chrome failed to start', 'chrome not reachable',
+        ]):
+            chrome_ver = find_chrome_version()
+            logger.warning(f"⚠️ Chrome failed to start (installed: {chrome_ver}). Clearing driver cache and retrying...")
+            clear_selenium_cache()
+            kill_chrome_processes_for_profile(profile_name)
+            cleanup_profile_locks(profile_name)
+            time.sleep(3)
+            # One retry with fresh cache
+            driver = webdriver.Chrome(options=chrome_options)
+        else:
+            raise
 
     # Verify browser started
     if not verify_browser_started(driver):
         driver.quit()
         raise WebDriverException("Browser started but is not responsive")
+
+    # Log Chrome versions
+    try:
+        caps = driver.capabilities
+        chrome_ver = caps.get('browserVersion', 'unknown')
+        driver_ver = caps.get('chrome', {}).get('chromedriverVersion', 'unknown').split(' ')[0]
+        logger.info(f"🌐 Chrome: v{chrome_ver}, ChromeDriver: v{driver_ver}")
+    except Exception:
+        pass
 
     # Save debugger address for other processes to connect
     debugger_address = f"127.0.0.1:{debug_port}"
