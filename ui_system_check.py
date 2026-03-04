@@ -44,7 +44,7 @@ LOCKED_PACKAGES = {
     "moviepy": "1.0.3",
     "requests": "2.32.5",
     "aiohttp": "3.12.15",
-    "selenium": "4.38.0",
+    "selenium": "4.40.0",
     "playwright": "1.55.0",
     "PyQt5": "5.15.11",
     "qtawesome": "1.4.0",

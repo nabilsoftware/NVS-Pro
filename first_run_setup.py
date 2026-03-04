@@ -330,7 +330,7 @@ PACKAGE_GROUPS = [
     {
         "name": "Web/Browser Automation",
         "packages": [
-            "selenium==4.38.0",
+            "selenium>=4.38.0",
             "playwright==1.56.0",
             "requests==2.32.5",
             "aiohttp==3.13.2",

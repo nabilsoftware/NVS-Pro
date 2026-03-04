@@ -259,6 +259,37 @@ def clear_selenium_cache():
         logger.info("ℹ️ No Selenium cache found to clear")
 
 
+def upgrade_selenium():
+    """Upgrade selenium to latest version to support newest Chrome."""
+    try:
+        import selenium
+        current = selenium.__version__
+        logger.info(f"📦 Current Selenium version: {current}")
+    except Exception:
+        current = "unknown"
+
+    # Find the Python executable
+    python_exe = sys.executable
+    if not python_exe or 'pythonw' in python_exe.lower():
+        python_exe = python_exe.replace('pythonw', 'python')
+
+    logger.info(f"📦 Upgrading Selenium to latest version...")
+    try:
+        result = subprocess.run(
+            [python_exe, "-m", "pip", "install", "--upgrade", "selenium", "--no-user", "--quiet"],
+            capture_output=True, text=True, timeout=120
+        )
+        if result.returncode == 0:
+            logger.info(f"✅ Selenium upgraded successfully (was: {current})")
+            return True
+        else:
+            logger.warning(f"⚠️ Selenium upgrade failed: {result.stderr[:200]}")
+            return False
+    except Exception as e:
+        logger.warning(f"⚠️ Could not upgrade Selenium: {e}")
+        return False
+
+
 # =============================================================================
 # NEW: BROWSER VERIFICATION FUNCTIONS
 # =============================================================================
@@ -535,6 +566,10 @@ def setup_driver(profile_name: str, browser_profile_path: str = None, retry_coun
             chrome_ver = find_chrome_version()
             logger.warning(f"⚠️ Chrome failed to start (installed: {chrome_ver}). Clearing driver cache...")
 
+            # On first crash: upgrade Selenium so its Selenium Manager supports newest Chrome
+            if retry_count == 0:
+                upgrade_selenium()
+
             # Clear cached ChromeDriver so Selenium re-downloads matching version
             clear_selenium_cache()
             kill_chrome_processes_for_profile(profile_name)
@@ -618,12 +653,13 @@ def setup_driver_with_remote_debugging(profile_name: str) -> tuple:
             'chrome failed to start', 'chrome not reachable',
         ]):
             chrome_ver = find_chrome_version()
-            logger.warning(f"⚠️ Chrome failed to start (installed: {chrome_ver}). Clearing driver cache and retrying...")
+            logger.warning(f"⚠️ Chrome failed to start (installed: {chrome_ver}). Upgrading Selenium and retrying...")
+            upgrade_selenium()
             clear_selenium_cache()
             kill_chrome_processes_for_profile(profile_name)
             cleanup_profile_locks(profile_name)
             time.sleep(3)
-            # One retry with fresh cache
+            # One retry with fresh cache + upgraded Selenium
             driver = webdriver.Chrome(options=chrome_options)
         else:
             raise
