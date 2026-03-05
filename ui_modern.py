@@ -8984,6 +8984,18 @@ class ModernMainWindow(QMainWindow):
                 QMessageBox.warning(self, "License Required", f"Cannot run pipeline: {message}")
                 return
 
+            # SECURITY: Verify channel limit before running
+            selected_channels_check = [name for name, cb in self.cc_profile_checkboxes.items() if cb.isChecked()]
+            max_channels = self.license_manager.get_max_channels()
+            if len(selected_channels_check) > max_channels:
+                QMessageBox.warning(
+                    self,
+                    "Channel Limit Exceeded",
+                    f"Your plan allows {max_channels} channel(s) but you selected {len(selected_channels_check)}.\n\n"
+                    f"Please deselect some channels or upgrade your license."
+                )
+                return
+
             # Get all interview folders from multi-folder list
             interview_folders = []
             for widget, line_edit in self.cc_multi_folder_list:
@@ -10644,6 +10656,113 @@ class ModernMainWindow(QMainWindow):
             self.global_broll_path.setText(folder)
             self._save_quick_options()
 
+    # =========================================================================
+    # WEB DASHBOARD PIPELINE TRIGGERS
+    # =========================================================================
+
+    def run_remote_pipeline(self, pipeline_data):
+        """Route web dashboard pipeline requests to the correct handler.
+        Called from remote_control.py when user triggers pipeline from web dashboard.
+        """
+        pipeline_type = pipeline_data.get('options', {}).get('pipeline_type', 'recreate')
+        if pipeline_type == 'create':
+            return self._dash_create_start(pipeline_data)
+        else:
+            return self._dash_recreate_start(pipeline_data)
+
+    def _dash_recreate_start(self, pipeline_data):
+        """Start Recreate Video pipeline from web dashboard."""
+        channels = pipeline_data.get('channels', [])
+        folders = pipeline_data.get('folders', [])
+
+        # SECURITY: Verify license
+        is_licensed, message, _ = self.license_manager.check_license()
+        if not is_licensed:
+            raise Exception(f"License required: {message}")
+
+        # SECURITY: Enforce channel limit
+        max_channels = self.license_manager.get_max_channels()
+        if len(channels) > max_channels:
+            raise Exception(
+                f"Channel limit exceeded: your plan allows {max_channels} channel(s) "
+                f"but {len(channels)} were selected. Upgrade your license for more channels."
+            )
+
+        if not channels:
+            raise Exception("No channels selected")
+        if not folders:
+            raise Exception("No folders selected")
+
+        # Use existing pipeline infrastructure
+        output_folder = self.output_line_edit.text().strip()
+        if not output_folder:
+            raise Exception("No output folder configured")
+
+        self.log_output.clear()
+        self.log_run_btn.setEnabled(False)
+        self.log_cc_run_btn.setEnabled(False)
+        self.log_stop_btn.setEnabled(True)
+
+        self.pipeline_thread = PipelineWorker(
+            RECREATE_SCRIPT,
+            selected_profiles=channels,
+            input_folders=folders,
+            manual_crop=pipeline_data.get('options', {}).get('manual_crop', False)
+        )
+        self.pipeline_thread.progress.connect(self.on_pipeline_progress)
+        self.pipeline_thread.finished.connect(self.on_pipeline_finished)
+        self.pipeline_thread.start()
+
+        self.log_output.append(f"🚀 Pipeline started with {len(folders)} folders")
+        for ch in channels:
+            self.log_output.append(f"   📺 {ch}")
+
+    def _dash_create_start(self, pipeline_data):
+        """Start Create Video pipeline from web dashboard."""
+        channels = pipeline_data.get('channels', [])
+        folders = pipeline_data.get('folders', [])
+
+        # SECURITY: Verify license
+        is_licensed, message, _ = self.license_manager.check_license()
+        if not is_licensed:
+            raise Exception(f"License required: {message}")
+
+        # SECURITY: Enforce channel limit
+        max_channels = self.license_manager.get_max_channels()
+        if len(channels) > max_channels:
+            raise Exception(
+                f"Channel limit exceeded: your plan allows {max_channels} channel(s) "
+                f"but {len(channels)} were selected. Upgrade your license for more channels."
+            )
+
+        if not channels:
+            raise Exception("No channels selected")
+        if not folders:
+            raise Exception("No folders selected")
+
+        broll_folder = self.cc_broll_line_edit.text().strip()
+        output_folder = self.cc_output_line_edit.text().strip()
+        if not output_folder:
+            raise Exception("No output folder configured")
+
+        self.log_output.clear()
+        self.log_run_btn.setEnabled(False)
+        self.log_cc_run_btn.setEnabled(False)
+        self.log_stop_btn.setEnabled(True)
+
+        self.cc_worker = ContentCreatorWorker(
+            CONTENT_CREATOR_SCRIPT,
+            folders,
+            broll_folder,
+            output_folder,
+            channels
+        )
+        self.cc_worker.progress.connect(self.on_cc_progress)
+        self.cc_worker.finished.connect(self.on_cc_finished)
+        self.cc_worker.start()
+
+        self.log_output.append(f"🎬 Starting Content Creator with {len(channels)} channel(s)...")
+
     def run_pipeline(self):
         # Log to file since pythonw.exe has no console
         log_file = SCRIPT_DIR / "pipeline_log.txt"
@@ -10672,20 +10791,7 @@ class ModernMainWindow(QMainWindow):
             QMessageBox.warning(self, "License Required", f"Cannot run pipeline: {lic_message}")
             return
 
-        # SECURITY: Verify channel limit before running
-        max_channels = self.license_manager.get_max_channels()
-        total_profiles = len(self.config_manager.get_profiles())
-        log(f"License check: max_channels={max_channels}, total_profiles={total_profiles}")
-
-        if total_profiles > max_channels:
-            QMessageBox.warning(
-                self,
-                "Channel Limit Exceeded",
-                f"You have {total_profiles} channels but your license only allows {max_channels}.\n\n"
-                f"Please remove {total_profiles - max_channels} channel(s) or upgrade your license.\n\n"
-                f"Go to Channels page to manage your channels."
-            )
-            return
+        # Channel limit will be checked after selected profiles are determined (below)
 
         # Get all input folders with their per-folder settings
         input_folders = []
@@ -10746,6 +10852,18 @@ class ModernMainWindow(QMainWindow):
 
         if not selected_profiles:
             QMessageBox.warning(self, "Error", "Please select at least one channel.")
+            return
+
+        # SECURITY: Verify channel limit before running
+        max_channels = self.license_manager.get_max_channels()
+        log(f"License check: max_channels={max_channels}, selected_profiles={len(selected_profiles)}")
+        if len(selected_profiles) > max_channels:
+            QMessageBox.warning(
+                self,
+                "Channel Limit Exceeded",
+                f"Your plan allows {max_channels} channel(s) but you selected {len(selected_profiles)}.\n\n"
+                f"Please deselect some channels or upgrade your license."
+            )
             return
 
         profile_name = selected_profiles[0] if len(selected_profiles) == 1 else None

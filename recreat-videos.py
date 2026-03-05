@@ -3853,6 +3853,24 @@ OUTPUT STRUCTURE:
     # Get processing configuration
     processing_config = determine_processing_mode(args.profile, args.profile_count, args.profiles)
 
+    # SECURITY: Enforce channel limit from license
+    try:
+        from license_manager import LicenseManager
+        _lm = LicenseManager()
+        _max_channels = _lm.get_max_channels()
+        _selected_count = len(PROMPT_PROFILES)  # PROMPT_PROFILES is already filtered to selected profiles
+        if _selected_count > _max_channels:
+            logger.error(f"❌ Channel limit exceeded: {_selected_count} selected, {_max_channels} allowed by your plan")
+            print(f"\n❌ ERROR: Your plan allows {_max_channels} channel(s) but {_selected_count} were selected.")
+            print("Please upgrade your license or select fewer channels.")
+            sys.exit(1)
+        else:
+            logger.info(f"✅ Channel limit OK: {_selected_count}/{_max_channels} channels")
+    except ImportError:
+        pass  # License manager not available (dev/standalone mode)
+    except Exception as e:
+        logger.warning(f"⚠️ Could not verify channel limit: {e}")
+
     # Handle step selection
     if args.start_step == -1:
         # If profile, profiles, or profile-count was specified (UI mode), use auto-skip without interactive menu

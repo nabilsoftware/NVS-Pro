@@ -4173,6 +4173,24 @@ def main():
     # Get processing configuration (skip prompts in auto mode)
     processing_config = determine_processing_mode(auto_mode=args.auto)
 
+    # SECURITY: Enforce channel limit from license
+    try:
+        from license_manager import LicenseManager
+        _lm = LicenseManager()
+        _max_channels = _lm.get_max_channels()
+        _selected_count = len(PROMPT_PROFILES)  # PROMPT_PROFILES is already filtered to selected channels
+        if _selected_count > _max_channels:
+            logger.error(f"❌ Channel limit exceeded: {_selected_count} selected, {_max_channels} allowed by your plan")
+            print(f"\n❌ ERROR: Your plan allows {_max_channels} channel(s) but {_selected_count} were selected.")
+            print("Please upgrade your license or select fewer channels.")
+            sys.exit(1)
+        else:
+            logger.info(f"✅ Channel limit OK: {_selected_count}/{_max_channels} channels")
+    except ImportError:
+        pass  # License manager not available (dev/standalone mode)
+    except Exception as e:
+        logger.warning(f"⚠️ Could not verify channel limit: {e}")
+
     # Interactive prompt for starting step (skip in auto mode)
     force_start_from_value = -1
     is_multi_mode = processing_config["mode"] == "numbered"
