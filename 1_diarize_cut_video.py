@@ -535,7 +535,6 @@ class SimplifiedVideoProcessor:
         success_count = 0
 
         # Use ThreadPoolExecutor for parallel FFmpeg execution
-        # FFmpeg is I/O bound so threads work well
         logger.info(f"  🚀 Cutting {len(segments)} clips in parallel (up to {MAX_PARALLEL_CUTS} at once)...")
 
         with ThreadPoolExecutor(max_workers=MAX_PARALLEL_CUTS) as executor:
@@ -546,6 +545,41 @@ class SimplifiedVideoProcessor:
                 if success:
                     success_count += 1
                 logger.info(f"  {msg}")
+
+        # Smart retry: if GPU cuts failed, retry failed ones sequentially with GPU, then CPU fallback
+        if success_count < len(segments) and self.use_gpu and ffmpeg_capabilities['nvenc_available']:
+            failed_args = [a for a in cut_args if not Path(a[2]).exists() or Path(a[2]).stat().st_size == 0]
+            if failed_args:
+                logger.info(f"  🔄 {len(failed_args)} GPU cuts failed — retrying sequentially with GPU then CPU fallback...")
+                for args in failed_args:
+                    video_path_r, seg, output_file, ct, idx, total, re_enc, _ = args
+                    # Try GPU one-at-a-time first (no parallel NVENC contention)
+                    cmd_gpu = [FFMPEG_PATH, '-hwaccel', 'cuda',
+                        '-ss', str(seg['start']), '-i', str(video_path_r),
+                        '-t', str(seg['end'] - seg['start']),
+                        '-c:v', 'h264_nvenc', '-preset', 'fast', '-b:v', '5M',
+                        '-c:a', 'aac', '-b:a', '192k',
+                        str(output_file), '-y', '-loglevel', 'error']
+                    try:
+                        subprocess.run(cmd_gpu, check=True, capture_output=True)
+                        success_count += 1
+                        logger.info(f"  ✓ Retry GPU OK: {ct} {idx+1}/{total}")
+                        continue
+                    except Exception:
+                        pass
+                    # CPU fallback
+                    cmd_cpu = [FFMPEG_PATH,
+                        '-ss', str(seg['start']), '-i', str(video_path_r),
+                        '-t', str(seg['end'] - seg['start']),
+                        '-c:v', 'libx264', '-preset', 'fast', '-crf', '18',
+                        '-c:a', 'aac', '-b:a', '192k',
+                        str(output_file), '-y', '-loglevel', 'error']
+                    try:
+                        subprocess.run(cmd_cpu, check=True, capture_output=True)
+                        success_count += 1
+                        logger.info(f"  ✓ Retry CPU OK: {ct} {idx+1}/{total}")
+                    except Exception as e:
+                        logger.error(f"  ❌ Retry failed: {ct} {idx+1}/{total}: {e}")
 
         return success_count
 

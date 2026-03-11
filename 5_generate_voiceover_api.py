@@ -193,7 +193,8 @@ def generate_voiceover_api(text, api_key, voice_id, output_path):
 
     headers = {
         "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "model": "s1"
     }
 
     payload = {
